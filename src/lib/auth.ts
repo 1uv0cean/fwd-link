@@ -1,10 +1,12 @@
 import User, { type IUser } from "@/models/User";
+import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth from "next-auth";
 import type { Provider } from "next-auth/providers";
 import Google from "next-auth/providers/google";
 import Resend from "next-auth/providers/resend";
 import { SUBSCRIPTION_STATUS } from "./constants";
 import dbConnect from "./db";
+import clientPromise from "./mongodb-client";
 
 // Extend the types
 declare module "next-auth" {
@@ -30,35 +32,36 @@ const providers: Provider[] = [
   Google({
     clientId: process.env.AUTH_GOOGLE_ID,
     clientSecret: process.env.AUTH_GOOGLE_SECRET,
+    allowDangerousEmailAccountLinking: true,
   }),
 ];
 
-// Only add Resend if the API key is available
-if (process.env.AUTH_RESEND_KEY) {
+// Only add Resend if the API key is available and valid
+const resendKey = process.env.AUTH_RESEND_KEY;
+if (resendKey && !resendKey.includes("<") && resendKey.length > 10) {
   providers.push(
     Resend({
-      apiKey: process.env.AUTH_RESEND_KEY,
+      apiKey: resendKey,
       from: process.env.AUTH_RESEND_FROM || "noreply@fwdlink.io",
     })
   );
 }
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
+  adapter: MongoDBAdapter(clientPromise),
   providers,
-  pages: {
-    signIn: "/auth/signin",
-    error: "/auth/error",
-  },
+  // Note: Custom pages are handled manually in signin page
+  // Don't set pages here as they need locale prefix
   callbacks: {
     async signIn({ user, account }) {
       await dbConnect();
 
       try {
-        // Check if user exists
+        // Check if user exists in our User collection
         const existingUser = await User.findOne({ email: user.email });
 
         if (!existingUser) {
-          // Create new user
+          // Create new user in our User collection
           const newUser = new User({
             email: user.email,
             name: user.name || user.email?.split("@")[0],
@@ -78,7 +81,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       }
     },
     async session({ session, token }) {
-      if (session.user && token.sub) {
+      if (session.user && (token?.sub || token?.email)) {
         await dbConnect();
         const dbUser = await User.findOne({ email: session.user.email }).lean();
 
@@ -101,3 +104,4 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     strategy: "jwt",
   },
 });
+
