@@ -63,7 +63,10 @@ export default async function QuoteViewPage({ params }: PageProps) {
 
   const { quotation } = result;
   const formattedPrice = formatCurrency(quotation.price, quotation.currency);
-  const shareUrl = `${APP_URL}/q/${shortId}`;
+  
+  // Generate localized share URL
+  const pathPrefix = locale === "en" ? "" : `/${locale}`;
+  const shareUrl = `${APP_URL}${pathPrefix}/q/${shortId}`;
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4">
