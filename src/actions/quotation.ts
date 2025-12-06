@@ -99,7 +99,10 @@ export async function createQuotation(
   }
 }
 
-export async function getQuotation(shortId: string) {
+export async function getQuotation(
+  shortId: string,
+  options: { incrementView?: boolean } = { incrementView: true }
+) {
   try {
     await dbConnect();
 
@@ -109,10 +112,12 @@ export async function getQuotation(shortId: string) {
       return { success: false, error: "Quotation not found" };
     }
 
-    // Increment view count
-    await Quotation.findByIdAndUpdate(quotation._id, {
-      $inc: { views: 1 },
-    });
+    // Increment view count if requested
+    if (options.incrementView) {
+      await Quotation.findByIdAndUpdate(quotation._id, {
+        $inc: { views: 1 },
+      });
+    }
 
     return {
       success: true,
@@ -123,7 +128,7 @@ export async function getQuotation(shortId: string) {
         price: quotation.price,
         currency: quotation.currency,
         validUntil: quotation.validUntil.toISOString(),
-        views: quotation.views + 1,
+        views: quotation.views + (options.incrementView ? 1 : 0),
       },
     };
   } catch (error) {

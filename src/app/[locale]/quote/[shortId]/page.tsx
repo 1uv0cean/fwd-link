@@ -13,7 +13,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { shortId } = await params;
-  const result = await getQuotation(shortId);
+  const result = await getQuotation(shortId, { incrementView: false });
 
   if (!result.success || !result.quotation) {
     return {
