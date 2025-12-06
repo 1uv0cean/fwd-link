@@ -1,0 +1,67 @@
+{
+  "common": {
+    "appName": "FwdLink",
+    "tagline": "Professional freight quotes in 10 seconds",
+    "loading": "Loading...",
+    "error": "Something went wrong",
+    "save": "Save",
+    "cancel": "Cancel",
+    "back": "Back",
+    "next": "Next",
+    "submit": "Submit"
+  },
+  "auth": {
+    "signIn": "Sign In",
+    "signOut": "Sign Out",
+    "signInWithGoogle": "Continue with Google",
+    "signInWithEmail": "Continue with Email",
+    "emailPlaceholder": "Enter your email",
+    "checkEmail": "Check your email for the magic link"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "welcomeBack": "Welcome back",
+    "createQuote": "Create Quote",
+    "recentQuotes": "Recent Quotes",
+    "noQuotes": "No quotes yet. Create your first one!",
+    "usageProgress": "Free Quotes",
+    "usageCount": "{used}/5 used",
+    "views": "{count} views"
+  },
+  "quote": {
+    "newQuote": "New Quote",
+    "portOfLoading": "Port of Loading",
+    "portOfLoadingPlaceholder": "e.g., BUSAN",
+    "portOfDischarge": "Port of Discharge",
+    "portOfDischargePlaceholder": "e.g., LA",
+    "price": "Price",
+    "currency": "Currency",
+    "validUntil": "Valid Until",
+    "createQuote": "Create Quote",
+    "shareVia": "Share via",
+    "whatsapp": "WhatsApp",
+    "kakao": "KakaoTalk",
+    "copyLink": "Copy Link",
+    "linkCopied": "Link copied!",
+    "quoteDetails": "Quote Details",
+    "route": "Route",
+    "validThrough": "Valid through"
+  },
+  "upgrade": {
+    "title": "Upgrade to Pro",
+    "limitReached": "You've used all 5 free quotes",
+    "description": "Unlock unlimited quotes and premium features",
+    "monthlyPrice": "$9/month",
+    "features": {
+      "unlimited": "Unlimited quotes",
+      "analytics": "Advanced analytics",
+      "branding": "Custom branding",
+      "priority": "Priority support"
+    },
+    "upgradeNow": "Upgrade Now"
+  },
+  "share": {
+    "primaryButton": "Share on WhatsApp",
+    "secondaryButton": "Share on KakaoTalk"
+  }
+}
