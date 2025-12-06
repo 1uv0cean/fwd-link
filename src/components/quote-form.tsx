@@ -1,6 +1,22 @@
 "use client";
 
 import { createQuotation } from "@/actions/quotation";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import type { Currency } from "@/lib/constants";
 import { ERROR_CODES, LOCALE_DEFAULTS } from "@/lib/constants";
 import { Calendar, DollarSign, Loader2, Ship } from "lucide-react";
@@ -50,7 +66,6 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
         return;
       }
 
-      // Redirect to quote page
       router.push(`/${locale}/quote/${result.shortId}`);
     } catch {
       setError("An unexpected error occurred");
@@ -59,7 +74,6 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
     }
   };
 
-  // Get default date (7 days from now)
   const defaultDate = new Date();
   defaultDate.setDate(defaultDate.getDate() + 7);
   const defaultDateStr = defaultDate.toISOString().split("T")[0];
@@ -69,45 +83,45 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
       <form onSubmit={handleSubmit} className="space-y-6">
         {/* Route Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              <Ship className="w-4 h-4 inline mr-2" />
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <Ship className="w-4 h-4" />
               {locale === "ko" ? "선적항 (POL)" : "Port of Loading"}
             </label>
-            <input
+            <Input
               type="text"
               value={formData.pol}
               onChange={(e) => setFormData({ ...formData, pol: e.target.value.toUpperCase() })}
               placeholder={locale === "ko" ? "예: BUSAN" : "e.g., BUSAN"}
               required
-              className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
+              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 uppercase"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              <Ship className="w-4 h-4 inline mr-2" />
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <Ship className="w-4 h-4" />
               {locale === "ko" ? "도착항 (POD)" : "Port of Discharge"}
             </label>
-            <input
+            <Input
               type="text"
               value={formData.pod}
               onChange={(e) => setFormData({ ...formData, pod: e.target.value.toUpperCase() })}
               placeholder={locale === "ko" ? "예: LA" : "e.g., LA"}
               required
-              className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent uppercase"
+              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 uppercase"
             />
           </div>
         </div>
 
         {/* Price Section */}
         <div className="grid grid-cols-2 gap-4">
-          <div className="col-span-1">
-            <label className="block text-sm font-medium text-slate-300 mb-2">
-              <DollarSign className="w-4 h-4 inline mr-2" />
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
               {locale === "ko" ? "가격" : "Price"}
             </label>
-            <input
+            <Input
               type="number"
               value={formData.price}
               onChange={(e) => setFormData({ ...formData, price: e.target.value })}
@@ -115,93 +129,101 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
               required
               min="0"
               step="0.01"
-              className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
             />
           </div>
 
-          <div className="col-span-1">
-            <label className="block text-sm font-medium text-slate-300 mb-2">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+              <DollarSign className="w-4 h-4" />
               {locale === "ko" ? "통화" : "Currency"}
             </label>
-            <select
+            <Select
               value={formData.currency}
-              onChange={(e) => setFormData({ ...formData, currency: e.target.value as Currency })}
-              className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              onValueChange={(value) => setFormData({ ...formData, currency: value as Currency })}
             >
-              <option value="USD">$ USD</option>
-              <option value="KRW">₩ KRW</option>
-            </select>
+              <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectItem value="USD" className="text-white hover:bg-slate-700">$ USD</SelectItem>
+                <SelectItem value="KRW" className="text-white hover:bg-slate-700">₩ KRW</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
         </div>
 
         {/* Valid Until */}
-        <div>
-          <label className="block text-sm font-medium text-slate-300 mb-2">
-            <Calendar className="w-4 h-4 inline mr-2" />
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+            <Calendar className="w-4 h-4" />
             {locale === "ko" ? "유효기간" : "Valid Until"}
           </label>
-          <input
+          <Input
             type="date"
             value={formData.validUntil || defaultDateStr}
             onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
             required
-            className="w-full px-4 py-3 rounded-xl bg-slate-800 border border-slate-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="bg-slate-800 border-slate-700 text-white"
           />
         </div>
 
         {/* Error Message */}
         {error && (
-          <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400">
+          <div className="p-4 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400">
             {error}
           </div>
         )}
 
         {/* Submit Button */}
-        <button
+        <Button
           type="submit"
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 px-6 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold text-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90"
         >
           {isLoading ? (
             <>
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-5 h-5 animate-spin mr-2" />
               {locale === "ko" ? "생성 중..." : "Creating..."}
             </>
           ) : (
             locale === "ko" ? "견적서 작성" : "Create Quote"
           )}
-        </button>
+        </Button>
       </form>
 
       {/* Upgrade Modal */}
-      {showUpgradeModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 rounded-2xl p-8 max-w-md w-full border border-slate-700">
-            <h2 className="text-2xl font-bold mb-4">
+      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+        <DialogContent className="bg-slate-900 border-slate-700">
+          <DialogHeader>
+            <DialogTitle>
               {locale === "ko" ? "무료 견적서를 모두 사용하셨습니다" : "You've used all free quotes"}
-            </h2>
-            <p className="text-slate-400 mb-6">
+            </DialogTitle>
+            <DialogDescription className="text-slate-400">
               {locale === "ko"
                 ? "Pro로 업그레이드하여 무제한 견적서를 작성하세요."
                 : "Upgrade to Pro for unlimited quotes."}
-            </p>
-            <div className="space-y-3">
-              <a
-                href={`/${locale}/upgrade`}
-                className="block w-full text-center px-6 py-4 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold"
-              >
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3 mt-4">
+            <Button
+              asChild
+              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500"
+            >
+              <a href={`/${locale}/upgrade`}>
                 {locale === "ko" ? "Pro로 업그레이드" : "Upgrade to Pro"}
               </a>
-              <button
-                onClick={() => setShowUpgradeModal(false)}
-                className="block w-full text-center px-6 py-4 rounded-xl bg-slate-800 text-slate-300 font-semibold hover:bg-slate-700 transition-colors"
-              >
-                {locale === "ko" ? "나중에" : "Maybe later"}
-              </button>
-            </div>
+            </Button>
+            <Button
+              variant="outline"
+              className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
+              onClick={() => setShowUpgradeModal(false)}
+            >
+              {locale === "ko" ? "나중에" : "Maybe later"}
+            </Button>
           </div>
-        </div>
-      )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
