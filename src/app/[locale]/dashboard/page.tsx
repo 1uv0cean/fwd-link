@@ -50,6 +50,7 @@ export default async function DashboardPage({
 
           <Link
             href={`/${locale}/quote/new`}
+            target="_blank"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-colors shadow-md"
           >
             <Plus className="w-5 h-5" />
@@ -128,6 +129,7 @@ export default async function DashboardPage({
                     </div>
                     <Link
                       href={`/${locale}/quote/${quote.shortId}`}
+                      target="_blank"
                       className="inline-flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900 font-medium"
                     >
                       {locale === "ko" ? "보기" : "View"}
