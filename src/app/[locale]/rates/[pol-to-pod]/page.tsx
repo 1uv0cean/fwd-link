@@ -6,6 +6,27 @@ import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 
+// Helper function to estimate transit time based on route type
+function getEstimatedTransitTime(originCountry: string, destCountry: string): { days: string; daysKo: string } {
+  // Same country (domestic)
+  if (originCountry === destCountry) {
+    return { days: "1-3 days", daysKo: "1-3일" };
+  }
+  
+  // Define Asian countries for regional routes
+  const asianCountries = ["KR", "CN", "JP", "VN", "TH", "SG", "MY", "ID", "PH", "TW", "HK"];
+  const isOriginAsia = asianCountries.includes(originCountry);
+  const isDestAsia = asianCountries.includes(destCountry);
+  
+  // Regional (within Asia)
+  if (isOriginAsia && isDestAsia) {
+    return { days: "3-7 days", daysKo: "3-7일" };
+  }
+  
+  // Intercontinental
+  return { days: "12-18 days", daysKo: "12-18일" };
+}
+
 interface RatePageParams {
   locale: string;
   "pol-to-pod": string;
@@ -281,16 +302,21 @@ export default async function RatePage({
             </div>
 
             {/* SEO Template Text - ~300 characters for indexing */}
-            <div className="mt-10 p-6 rounded-2xl bg-slate-50 border border-slate-200">
-              <h3 className="font-semibold text-lg mb-3 text-slate-800">
-                {isKorean ? "항로 정보" : "Route Information"}
-              </h3>
-              <p className="text-slate-600 leading-relaxed">
-                {isKorean
-                  ? `${origin.name} (${origin.code})에서 ${destination.name} (${destination.code})까지의 해상 운송은 약 12-18일이 소요됩니다. 이 항로는 ${originCountry}와 ${destCountry}를 연결하는 주요 무역 노선 중 하나입니다. FwdLink를 사용하여 Local Charge와 Surcharge를 포함한 정확한 FCL/LCL 비용을 계산하세요. 전문 포워더를 위한 견적 솔루션으로, 복잡한 운임 계산을 간단하게 처리할 수 있습니다.`
-                  : `Shipping from ${origin.name} (${origin.code}) to ${destination.name} (${destination.code}) takes approximately 12-18 days. This route is one of the busiest trade lanes connecting ${originCountry} and ${destCountry}. Use FwdLink to calculate precise FCL/LCL costs including local charges and surcharges. Our professional quotation solution for freight forwarders simplifies complex rate calculations.`}
-              </p>
-            </div>
+            {(() => {
+              const transitTime = getEstimatedTransitTime(origin.country, destination.country);
+              return (
+                <div className="mt-10 p-6 rounded-2xl bg-slate-50 border border-slate-200">
+                  <h3 className="font-semibold text-lg mb-3 text-slate-800">
+                    {isKorean ? "항로 정보" : "Route Information"}
+                  </h3>
+                  <p className="text-slate-600 leading-relaxed">
+                    {isKorean
+                      ? `${origin.name} (${origin.code})에서 ${destination.name} (${destination.code})까지의 해상 운송은 약 ${transitTime.daysKo}이 소요됩니다. 이 항로는 ${originCountry}와 ${destCountry}를 연결하는 주요 무역 노선 중 하나입니다. FwdLink를 사용하여 Local Charge와 Surcharge를 포함한 정확한 FCL/LCL 비용을 계산하세요. 전문 포워더를 위한 견적 솔루션으로, 복잡한 운임 계산을 간단하게 처리할 수 있습니다.`
+                      : `Shipping from ${origin.name} (${origin.code}) to ${destination.name} (${destination.code}) takes approximately ${transitTime.days}. This route is one of the busiest trade lanes connecting ${originCountry} and ${destCountry}. Use FwdLink to calculate precise FCL/LCL costs including local charges and surcharges. Our professional quotation solution for freight forwarders simplifies complex rate calculations.`}
+                  </p>
+                </div>
+              );
+            })()}
           </div>
         </section>
 
