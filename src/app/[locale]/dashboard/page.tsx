@@ -1,5 +1,5 @@
 import { getUserQuotations } from "@/actions/quotation";
-import { auth } from "@/lib/auth";
+import { auth, signOut } from "@/lib/auth";
 import { FREE_QUOTA_LIMIT } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { ExternalLink, Eye, Plus } from "lucide-react";
@@ -48,13 +48,28 @@ export default async function DashboardPage({
             </p>
           </div>
 
-          <Link
-            href={`/${locale}/quote/new`}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-colors shadow-md"
-          >
-            <Plus className="w-5 h-5" />
-            {locale === "ko" ? "견적서 작성" : "Create Quote"}
-          </Link>
+          <div className="flex items-center gap-3">
+            <form
+              action={async () => {
+                "use server";
+                await signOut({ redirectTo: `/${locale}` });
+              }}
+            >
+              <button
+                type="submit"
+                className="px-4 py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:bg-slate-100 transition-colors"
+              >
+                {locale === "ko" ? "로그아웃" : "Sign Out"}
+              </button>
+            </form>
+            <Link
+              href={`/${locale}/quote/new`}
+              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-colors shadow-md"
+            >
+              <Plus className="w-5 h-5" />
+              {locale === "ko" ? "견적서 작성" : "Create Quote"}
+            </Link>
+          </div>
         </div>
 
         {/* Usage Progress */}

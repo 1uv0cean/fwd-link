@@ -1,7 +1,9 @@
+import { auth } from "@/lib/auth";
 import { ArrowRight, Globe, Send, Shield, Zap } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 export default async function HomePage({
   params,
@@ -10,6 +12,12 @@ export default async function HomePage({
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
+
+  // Redirect logged-in users to dashboard
+  const session = await auth();
+  if (session?.user) {
+    redirect(`/${locale}/dashboard`);
+  }
 
   return <HomePageContent locale={locale} />;
 }
