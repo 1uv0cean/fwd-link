@@ -39,7 +39,6 @@
     "createQuote": "견적서 작성",
     "shareVia": "공유하기",
     "whatsapp": "WhatsApp",
-    "kakao": "카카오톡",
     "copyLink": "링크 복사",
     "linkCopied": "링크가 복사되었습니다!",
     "quoteDetails": "견적서 상세",
@@ -60,7 +59,7 @@
     "upgradeNow": "지금 업그레이드"
   },
   "share": {
-    "primaryButton": "카카오톡으로 공유",
-    "secondaryButton": "WhatsApp으로 공유"
+    "primaryButton": "WhatsApp으로 공유",
+    "secondaryButton": "링크 복사"
   }
 }

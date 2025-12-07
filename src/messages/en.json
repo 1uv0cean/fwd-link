@@ -39,7 +39,6 @@
     "createQuote": "Create Quote",
     "shareVia": "Share via",
     "whatsapp": "WhatsApp",
-    "kakao": "KakaoTalk",
     "copyLink": "Copy Link",
     "linkCopied": "Link copied!",
     "quoteDetails": "Quote Details",
@@ -61,6 +60,6 @@
   },
   "share": {
     "primaryButton": "Share on WhatsApp",
-    "secondaryButton": "Share on KakaoTalk"
+    "secondaryButton": "Copy Link"
   }
 }

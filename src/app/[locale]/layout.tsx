@@ -87,8 +87,6 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
-        {/* Kakao SDK */}
-        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" async />
         {/* Structured Data */}
         <OrganizationJsonLd />
         <WebApplicationJsonLd locale={locale} />
