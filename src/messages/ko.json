@@ -25,7 +25,7 @@
     "recentQuotes": "최근 견적서",
     "noQuotes": "견적서가 없습니다. 첫 번째 견적서를 작성해보세요!",
     "usageProgress": "무료 견적서",
-    "usageCount": "{used}/5 사용됨",
+    "usageCount": "{used}/3 사용됨",
     "views": "{count}회 조회"
   },
   "quote": {
@@ -47,9 +47,16 @@
   },
   "upgrade": {
     "title": "Pro로 업그레이드",
-    "limitReached": "무료 견적서 5개를 모두 사용하셨습니다",
+    "limitReached": "무료 견적서 3개를 모두 사용하셨습니다",
     "description": "무제한 견적서와 프리미엄 기능을 이용하세요",
-    "monthlyPrice": "₩12,000/월",
+    "monthlyPrice": "₩25,000/월",
+    "annualPrice": "₩270,000/년",
+    "monthlyLabel": "월간",
+    "annualLabel": "연간",
+    "savePercent": "10% 할인",
+    "perMonth": "/월",
+    "perYear": "/년",
+    "billedAnnually": "연 ₩270,000 결제",
     "features": {
       "unlimited": "무제한 견적서",
       "analytics": "고급 분석",

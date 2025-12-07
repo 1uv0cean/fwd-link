@@ -25,7 +25,7 @@
     "recentQuotes": "Recent Quotes",
     "noQuotes": "No quotes yet. Create your first one!",
     "usageProgress": "Free Quotes",
-    "usageCount": "{used}/5 used",
+    "usageCount": "{used}/3 used",
     "views": "{count} views"
   },
   "quote": {
@@ -47,9 +47,16 @@
   },
   "upgrade": {
     "title": "Upgrade to Pro",
-    "limitReached": "You've used all 5 free quotes",
+    "limitReached": "You've used all 3 free quotes",
     "description": "Unlock unlimited quotes and premium features",
-    "monthlyPrice": "$9/month",
+    "monthlyPrice": "$19/month",
+    "annualPrice": "$190/year",
+    "monthlyLabel": "Monthly",
+    "annualLabel": "Annual",
+    "savePercent": "Save 17%",
+    "perMonth": "/month",
+    "perYear": "/year",
+    "billedAnnually": "Billed annually at $190",
     "features": {
       "unlimited": "Unlimited quotes",
       "analytics": "Advanced analytics",
