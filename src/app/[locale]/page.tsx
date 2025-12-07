@@ -55,7 +55,7 @@ function HomePageContent({ locale }: { locale: string }) {
               href={`/${locale}/auth/signin`}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-blue-900 text-white font-semibold text-lg hover:bg-blue-800 transition-colors shadow-md"
             >
-              {t("auth.signIn")}
+              {locale === "ko" ? "무료로 시작하기" : "Get Started Free"}
               <ArrowRight className="w-5 h-5" />
             </Link>
           </div>
