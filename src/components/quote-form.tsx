@@ -19,23 +19,32 @@ import { Calendar, DollarSign, FileText, Loader2, Ship } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-interface QuoteFormProps {
-  locale: string;
+export interface QuoteFormInitialData {
+  pol?: Port | null;
+  pod?: Port | null;
+  containerType?: ContainerType;
+  price?: number;
+  remarks?: string;
 }
 
-export default function QuoteForm({ locale }: QuoteFormProps) {
+interface QuoteFormProps {
+  locale: string;
+  initialData?: QuoteFormInitialData;
+}
+
+export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
-  const [pol, setPol] = useState<Port | null>(null);
-  const [pod, setPod] = useState<Port | null>(null);
-  const [containerType, setContainerType] = useState<ContainerType>("40HQ");
-  const [price, setPrice] = useState("");
+  const [pol, setPol] = useState<Port | null>(initialData?.pol || null);
+  const [pod, setPod] = useState<Port | null>(initialData?.pod || null);
+  const [containerType, setContainerType] = useState<ContainerType>(initialData?.containerType || "40HQ");
+  const [price, setPrice] = useState(initialData?.price?.toString() || "");
   const [validUntil, setValidUntil] = useState("");
-  const [remarks, setRemarks] = useState("");
+  const [remarks, setRemarks] = useState(initialData?.remarks || "");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

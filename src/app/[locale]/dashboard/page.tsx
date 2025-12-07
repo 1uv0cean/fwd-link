@@ -2,7 +2,7 @@ import { getUserQuotations } from "@/actions/quotation";
 import { auth, signOut } from "@/lib/auth";
 import { FREE_QUOTA_LIMIT } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { ExternalLink, Eye, Plus } from "lucide-react";
+import { Copy, ExternalLink, Eye, Plus } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -181,14 +181,24 @@ export default async function DashboardPage({
                       <Eye className="w-4 h-4" />
                       {quote.views} {locale === "ko" ? "회 조회" : "views"}
                     </div>
-                    <Link
-                      href={`/${locale}/quote/${quote.shortId}`}
-                      target="_blank"
-                      className="inline-flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900 font-medium"
-                    >
-                      {locale === "ko" ? "보기" : "View"}
-                      <ExternalLink className="w-4 h-4" />
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/${locale}/quote/new?duplicate=${quote.shortId}`}
+                        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-blue-700 font-medium transition-colors"
+                        title={locale === "ko" ? "복제하기" : "Duplicate"}
+                      >
+                        <Copy className="w-4 h-4" />
+                        {locale === "ko" ? "복제" : "Duplicate"}
+                      </Link>
+                      <Link
+                        href={`/${locale}/quote/${quote.shortId}`}
+                        target="_blank"
+                        className="inline-flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900 font-medium"
+                      >
+                        {locale === "ko" ? "보기" : "View"}
+                        <ExternalLink className="w-4 h-4" />
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>
