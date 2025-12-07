@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Check, Copy } from "lucide-react";
+import { Check, Mail, Share2 } from "lucide-react";
 import { useState } from "react";
 
 // WhatsApp Icon Component
@@ -21,9 +21,34 @@ export default function ShareButtons({ url, title, locale }: ShareButtonsProps) 
   const [copied, setCopied] = useState(false);
   const isKorean = locale === "ko";
 
-  const handleCopyLink = async () => {
+  // Professional business message
+  const getBusinessMessage = () => {
+    if (isKorean) {
+      return `운임 견적서가 도착했습니다\n\n${title}\n\n아래 링크에서 상세 내용을 확인해 주세요:\n${url}\n\n- FwdLink`;
+    }
+    return `Freight Quotation\n\n${title}\n\nPlease review the details at the link below:\n${url}\n\n- FwdLink`;
+  };
+
+  const handleShare = async () => {
+    const message = getBusinessMessage();
+
+    // Try Web Share API first
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: isKorean ? "FwdLink 운임 견적서" : "FwdLink Freight Quotation",
+          text: message,
+          url: url,
+        });
+        return;
+      } catch (error) {
+        if ((error as Error).name === "AbortError") return;
+      }
+    }
+
+    // Fallback: copy to clipboard
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(message);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (error) {
@@ -32,36 +57,60 @@ export default function ShareButtons({ url, title, locale }: ShareButtonsProps) 
   };
 
   const handleWhatsAppShare = () => {
-    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${title}\n${url}`)}`;
+    const message = getBusinessMessage();
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
+  };
+
+  const handleEmailShare = () => {
+    const subject = isKorean
+      ? `[FwdLink] 운임 견적서 - ${title}`
+      : `[FwdLink] Freight Quotation - ${title}`;
+
+    const body = isKorean
+      ? `안녕하세요,\n\n아래와 같이 운임 견적서를 보내드립니다.\n\n${title}\n\n상세 내용은 아래 링크에서 확인해 주세요:\n${url}\n\n감사합니다.\n\n---\nFwdLink - 10초 만에 전문 운임 견적서`
+      : `Hello,\n\nPlease find the freight quotation below.\n\n${title}\n\nView full details at:\n${url}\n\nBest regards,\n\n---\nFwdLink - Professional Freight Quotes in 10 Seconds`;
+
+    const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    window.open(mailtoUrl);
   };
 
   return (
     <div className="space-y-3">
-      {/* WhatsApp Share Button */}
+      {/* Primary: WhatsApp Share */}
       <Button
         onClick={handleWhatsAppShare}
         className="w-full h-14 text-base font-semibold bg-[#25D366] text-white hover:bg-[#25D366]/90"
       >
         <WhatsAppIcon className="w-5 h-5 mr-2" />
-        {isKorean ? "WhatsApp으로 공유" : "Share on WhatsApp"}
+        {isKorean ? "WhatsApp으로 전송" : "Send via WhatsApp"}
       </Button>
 
-      {/* Copy Link Button */}
+      {/* Secondary: Email Share */}
       <Button
         variant="outline"
-        onClick={handleCopyLink}
+        onClick={handleEmailShare}
         className="w-full h-14 text-base font-semibold border-slate-300 text-slate-700 hover:bg-slate-100"
+      >
+        <Mail className="w-5 h-5 mr-2" />
+        {isKorean ? "이메일로 전송" : "Send via Email"}
+      </Button>
+
+      {/* Tertiary: Native Share / Copy */}
+      <Button
+        variant="ghost"
+        onClick={handleShare}
+        className="w-full h-12 text-sm font-medium text-slate-500 hover:text-slate-700 hover:bg-slate-100"
       >
         {copied ? (
           <>
-            <Check className="w-5 h-5 mr-2 text-green-400" />
-            {isKorean ? "링크가 복사되었습니다!" : "Link copied!"}
+            <Check className="w-4 h-4 mr-2 text-green-500" />
+            {isKorean ? "견적서 링크가 복사되었습니다" : "Quotation link copied"}
           </>
         ) : (
           <>
-            <Copy className="w-5 h-5 mr-2" />
-            {isKorean ? "링크 복사" : "Copy Link"}
+            <Share2 className="w-4 h-4 mr-2" />
+            {isKorean ? "다른 방법으로 공유" : "Share via other apps"}
           </>
         )}
       </Button>
