@@ -40,6 +40,10 @@ export default async function LocaleLayout({
 
   return (
     <html lang={locale} suppressHydrationWarning>
+      <head>
+        {/* Kakao SDK */}
+        <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js" async />
+      </head>
       <body
         className={`${inter.variable} ${notoSansKR.variable} font-sans antialiased bg-slate-50 text-slate-800 min-h-screen`}
       >

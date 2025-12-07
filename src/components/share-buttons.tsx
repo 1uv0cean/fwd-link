@@ -2,7 +2,38 @@
 
 import { Button } from "@/components/ui/button";
 import { Check, Copy } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+// Declare Kakao global type
+declare global {
+  interface Window {
+    Kakao: {
+      init: (key: string) => void;
+      isInitialized: () => boolean;
+      Share: {
+        sendDefault: (options: {
+          objectType: string;
+          content: {
+            title: string;
+            description: string;
+            imageUrl: string;
+            link: {
+              mobileWebUrl: string;
+              webUrl: string;
+            };
+          };
+          buttons?: Array<{
+            title: string;
+            link: {
+              mobileWebUrl: string;
+              webUrl: string;
+            };
+          }>;
+        }) => void;
+      };
+    };
+  }
+}
 
 // WhatsApp Icon Component
 const WhatsAppIcon = ({ className }: { className?: string }) => (
@@ -26,7 +57,39 @@ interface ShareButtonsProps {
 
 export default function ShareButtons({ url, title, locale }: ShareButtonsProps) {
   const [copied, setCopied] = useState(false);
+  const [kakaoReady, setKakaoReady] = useState(false);
   const isKorean = locale === "ko";
+
+  // Initialize Kakao SDK
+  useEffect(() => {
+    const initKakao = () => {
+      if (window.Kakao && !window.Kakao.isInitialized()) {
+        const kakaoKey = process.env.NEXT_PUBLIC_KAKAO_API_KEY;
+        if (kakaoKey) {
+          window.Kakao.init(kakaoKey);
+          setKakaoReady(true);
+        }
+      } else if (window.Kakao?.isInitialized()) {
+        setKakaoReady(true);
+      }
+    };
+
+    // Check if Kakao is already loaded
+    if (window.Kakao) {
+      initKakao();
+    } else {
+      // Wait for Kakao SDK to load
+      const checkKakao = setInterval(() => {
+        if (window.Kakao) {
+          initKakao();
+          clearInterval(checkKakao);
+        }
+      }, 100);
+
+      // Clear interval after 5 seconds
+      setTimeout(() => clearInterval(checkKakao), 5000);
+    }
+  }, []);
 
   const handleCopyLink = async () => {
     try {
@@ -44,7 +107,32 @@ export default function ShareButtons({ url, title, locale }: ShareButtonsProps) 
   };
 
   const handleKakaoShare = () => {
-    handleCopyLink();
+    if (kakaoReady && window.Kakao?.Share) {
+      window.Kakao.Share.sendDefault({
+        objectType: "feed",
+        content: {
+          title: "FwdLink 견적서",
+          description: title,
+          imageUrl: "https://fwdlink.io/og-image.png",
+          link: {
+            mobileWebUrl: url,
+            webUrl: url,
+          },
+        },
+        buttons: [
+          {
+            title: isKorean ? "견적서 보기" : "View Quote",
+            link: {
+              mobileWebUrl: url,
+              webUrl: url,
+            },
+          },
+        ],
+      });
+    } else {
+      // Fallback: copy link
+      handleCopyLink();
+    }
   };
 
   return (
