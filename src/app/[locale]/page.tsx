@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { ArrowRight, Globe, Send, Shield, Zap } from "lucide-react";
+import { ArrowRight, Globe, Send, Shield } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
@@ -30,16 +30,14 @@ function HomePageContent({ locale }: { locale: string }) {
       {/* Hero Section */}
       <section className="flex-1 flex flex-col items-center justify-center px-4 py-20">
         <div className="max-w-4xl mx-auto text-center">
-          {/* Badge */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 border border-blue-200 text-blue-800 text-sm mb-8">
-            <Zap className="w-4 h-4" />
-            <span>Built for Small Forwarders</span>
-          </div>
+   
 
           {/* Headline */}
-          <h1 className="text-4xl md:text-6xl font-bold mb-6 text-slate-900">
-            {t("common.appName")}
-          </h1>
+          <img
+            src="/og-image.png"
+            alt="FwdLink"
+            className="rounded-lg h-26 md:h-32 w-auto mx-auto mb-6"
+          />
 
           <p className="text-lg md:text-2xl text-slate-600 mb-4">
             {t("common.tagline")}
@@ -47,8 +45,8 @@ function HomePageContent({ locale }: { locale: string }) {
 
           <p className="text-md text-slate-500 mb-12 max-w-2xl mx-auto">
             {locale === "ko"
-              ? "엑셀은 이제 그만. WhatsApp/카카오톡 링크로 10초 만에 전문 운임 견적서를 보내세요."
-              : "Stop using Excel. Send professional freight quotes via WhatsApp/Kakao link in 10 seconds."}
+              ? "엑셀은 이제 그만. WhatsApp 링크로 10초 만에 전문 운임 견적서를 보내세요."
+              : "Stop using Excel. Send professional freight quotes via WhatsApp link in 10 seconds."}
           </p>
 
           {/* CTA Buttons */}
@@ -97,7 +95,7 @@ function HomePageContent({ locale }: { locale: string }) {
               </h3>
               <p className="text-slate-600">
                 {locale === "ko"
-                  ? "WhatsApp/카카오톡에서 가격이 바로 보이는 프리뷰를 제공합니다."
+                  ? "WhatsApp에서 가격이 바로 보이는 프리뷰를 제공합니다."
                   : "Recipients see the price directly in chat apps before clicking."}
               </p>
             </div>

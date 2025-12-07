@@ -36,8 +36,8 @@ export async function generateMetadata({
     : "FwdLink - Professional Freight Quotes in 10 Seconds";
 
   const description = isKorean
-    ? "엑셀은 이제 그만. WhatsApp/카카오톡 링크로 10초 만에 전문 운임 견적서를 보내세요."
-    : "Stop using Excel. Send professional freight quotes via WhatsApp/Kakao link in 10 seconds.";
+    ? "엑셀은 이제 그만. WhatsApp 링크로 10초 만에 전문 운임 견적서를 보내세요."
+    : "Stop using Excel. Send professional freight quotes via WhatsApp link in 10 seconds.";
 
   // Build alternate language links
   const languages: Record<string, string> = {};

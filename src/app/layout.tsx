@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     template: "%s | FwdLink",
   },
   description:
-    "Stop using Excel. Send professional freight quotes via WhatsApp/Kakao link in 10 seconds. The fastest way to share shipping rates.",
+    "Stop using Excel. Send professional freight quotes via WhatsApp link in 10 seconds. The fastest way to share shipping rates.",
   keywords: [
     "freight quote",
     "shipping",
@@ -56,7 +56,7 @@ export const metadata: Metadata = {
     siteName: "FwdLink",
     title: "FwdLink - Professional Freight Quotes in 10 Seconds",
     description:
-      "Stop using Excel. Send professional freight quotes via WhatsApp/Kakao link in 10 seconds.",
+      "Stop using Excel. Send professional freight quotes via WhatsApp link in 10 seconds.",
     images: [
       {
         url: "/og-image.png",
@@ -70,7 +70,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "FwdLink - Professional Freight Quotes",
     description:
-      "Stop using Excel. Send professional freight quotes via WhatsApp/Kakao link in 10 seconds.",
+      "Stop using Excel. Send professional freight quotes via WhatsApp link in 10 seconds.",
     images: ["/og-image.png"],
   },
   alternates: {
