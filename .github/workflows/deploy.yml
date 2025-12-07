@@ -24,7 +24,7 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
       - name: Build application
         run: npm run build
@@ -42,7 +42,7 @@ jobs:
           script: |
             cd ~/fwd-link
             git pull origin main
-            npm ci --production=false
+            npm install
             npm run build
             pm2 restart fwd-link || pm2 start npm --name "fwd-link" -- start
 
