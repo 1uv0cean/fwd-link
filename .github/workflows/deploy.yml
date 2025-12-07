@@ -35,10 +35,23 @@ jobs:
 
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          AUTH_SECRET: ${{ secrets.AUTH_SECRET }}
+          NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
+          AUTH_GOOGLE_ID: ${{ secrets.AUTH_GOOGLE_ID }}
+          AUTH_GOOGLE_SECRET: ${{ secrets.AUTH_GOOGLE_SECRET }}
+          AUTH_RESEND_FROM: ${{ secrets.AUTH_RESEND_FROM }}
+          AUTH_RESEND_KEY: ${{ secrets.AUTH_RESEND_KEY }}
+          AUTH_URL: ${{ secrets.AUTH_URL }}
+          NEXT_PUBLIC_APP_URL: ${{ secrets.NEXT_PUBLIC_APP_URL }}
+          NEXT_PUBLIC_KAKAO_API_KEY: ${{ secrets.NEXT_PUBLIC_KAKAO_API_KEY }}
+          NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL: ${{ secrets.NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL }}
         with:
           host: ${{ secrets.EC2_HOST }}
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
+          envs: MONGODB_URI,AUTH_SECRET,NEXTAUTH_URL,AUTH_GOOGLE_ID,AUTH_GOOGLE_SECRET,AUTH_RESEND_FROM,AUTH_RESEND_KEY,AUTH_URL,NEXT_PUBLIC_APP_URL,NEXT_PUBLIC_KAKAO_API_KEY,NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL
           script: |
             # Load shell environment
             source ~/.bashrc || true
@@ -61,6 +74,22 @@ jobs:
             
             cd ~/fwd-link
             git pull origin main
+            
+            # Create .env.local from secrets
+            cat > .env.local << EOF
+MONGODB_URI=${MONGODB_URI}
+AUTH_SECRET=${AUTH_SECRET}
+NEXTAUTH_URL=${NEXTAUTH_URL}
+AUTH_GOOGLE_ID=${AUTH_GOOGLE_ID}
+AUTH_GOOGLE_SECRET=${AUTH_GOOGLE_SECRET}
+AUTH_RESEND_FROM=${AUTH_RESEND_FROM}
+AUTH_RESEND_KEY=${AUTH_RESEND_KEY}
+AUTH_URL=${AUTH_URL}
+NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+NEXT_PUBLIC_KAKAO_API_KEY=${NEXT_PUBLIC_KAKAO_API_KEY}
+NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL=${NEXT_PUBLIC_LEMON_SQUEEZY_CHECKOUT_URL}
+EOF
+            
             npm install
             
             # Build using npx to ensure next is found in local node_modules
