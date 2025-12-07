@@ -61,6 +61,8 @@ export default async function QuoteViewPage({ params }: PageProps) {
   const formattedPrice = formatCurrency(quotation.price);
   const polName = typeof quotation.pol === 'object' ? quotation.pol.name : quotation.pol;
   const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
+  const polCode = typeof quotation.pol === 'object' ? quotation.pol.code : null;
+  const podCode = typeof quotation.pod === 'object' ? quotation.pod.code : null;
   const containerType = quotation.containerType || '40HQ';
   
   const polFlag = getFlagFromPort(quotation.pol);
@@ -112,6 +114,11 @@ export default async function QuoteViewPage({ params }: PageProps) {
                     <span className="text-2xl">{polFlag}</span>
                     <span className="text-lg font-bold text-slate-900">{polName}</span>
                   </div>
+                  {polCode && (
+                    <span className="mt-1 inline-block px-2 py-0.5 rounded text-xs font-mono text-slate-500 bg-slate-100">
+                      {polCode}
+                    </span>
+                  )}
                 </div>
 
                 {/* Arrow */}
@@ -133,6 +140,11 @@ export default async function QuoteViewPage({ params }: PageProps) {
                     <span className="text-2xl">{podFlag}</span>
                     <span className="text-lg font-bold text-slate-900">{podName}</span>
                   </div>
+                  {podCode && (
+                    <span className="mt-1 inline-block px-2 py-0.5 rounded text-xs font-mono text-slate-500 bg-slate-100">
+                      {podCode}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
