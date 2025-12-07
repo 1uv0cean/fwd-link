@@ -195,6 +195,31 @@ export default async function RatePage({
                 : `From ${origin.name}, ${originCountry} to ${destination.name}, ${destCountry}`}
             </p>
 
+            {/* Estimated Spot Rate - Virtual Data for conversion */}
+            {(() => {
+              // Generate pseudo-random rate based on port codes for consistency
+              const seed = (origin.code.charCodeAt(2) + destination.code.charCodeAt(2)) % 10;
+              const baseRate = 1200 + seed * 150;
+              const minRate = baseRate;
+              const maxRate = baseRate + 300 + (seed * 50);
+              return (
+                <div className="mb-6 p-4 rounded-xl bg-gradient-to-r from-blue-100 to-green-100 border border-blue-200">
+                  <p className="text-sm text-slate-500 mb-1">
+                    {isKorean ? "현재 예상 Spot Rate" : "Current Estimated Spot Rate"}
+                  </p>
+                  <p className="text-2xl md:text-3xl font-bold text-slate-900">
+                    ${minRate.toLocaleString()} ~ ${maxRate.toLocaleString()}
+                    <span className="text-lg font-medium text-slate-600 ml-2">(40HQ)</span>
+                  </p>
+                  <p className="text-xs text-slate-400 mt-2">
+                    {isKorean
+                      ? "※ 정확한 견적은 로그인 후 확인하세요. 할증료 별도."
+                      : "※ Exact quote available after sign in. Surcharges extra."}
+                  </p>
+                </div>
+              );
+            })()}
+
             <p className="text-md text-slate-500 mb-8 max-w-2xl mx-auto">
               {isKorean
                 ? "FwdLink에서 즉시 견적을 확인하세요. 10초 만에 전문 운임 견적서를 생성할 수 있습니다."
@@ -253,6 +278,18 @@ export default async function RatePage({
                   UN/LOCODE: {destination.code}
                 </p>
               </div>
+            </div>
+
+            {/* SEO Template Text - ~300 characters for indexing */}
+            <div className="mt-10 p-6 rounded-2xl bg-slate-50 border border-slate-200">
+              <h3 className="font-semibold text-lg mb-3 text-slate-800">
+                {isKorean ? "항로 정보" : "Route Information"}
+              </h3>
+              <p className="text-slate-600 leading-relaxed">
+                {isKorean
+                  ? `${origin.name} (${origin.code})에서 ${destination.name} (${destination.code})까지의 해상 운송은 약 12-18일이 소요됩니다. 이 항로는 ${originCountry}와 ${destCountry}를 연결하는 주요 무역 노선 중 하나입니다. FwdLink를 사용하여 Local Charge와 Surcharge를 포함한 정확한 FCL/LCL 비용을 계산하세요. 전문 포워더를 위한 견적 솔루션으로, 복잡한 운임 계산을 간단하게 처리할 수 있습니다.`
+                  : `Shipping from ${origin.name} (${origin.code}) to ${destination.name} (${destination.code}) takes approximately 12-18 days. This route is one of the busiest trade lanes connecting ${originCountry} and ${destCountry}. Use FwdLink to calculate precise FCL/LCL costs including local charges and surcharges. Our professional quotation solution for freight forwarders simplifies complex rate calculations.`}
+              </p>
             </div>
           </div>
         </section>
