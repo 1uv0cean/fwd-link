@@ -69,9 +69,8 @@ export default async function QuoteViewPage({ params }: PageProps) {
   const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
   const containerType = quotation.containerType || '40HQ';
   
-  // Generate localized share URL
-  const pathPrefix = locale === "en" ? "" : `/${locale}`;
-  const shareUrl = `${APP_URL}${pathPrefix}/q/${shortId}`;
+  // Generate localized share URL - always include locale prefix
+  const shareUrl = `${APP_URL}/${locale}/quote/${shortId}`;
 
   return (
     <main className="min-h-screen flex items-center justify-center p-4">
