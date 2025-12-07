@@ -4,7 +4,7 @@ export const APP_DOMAIN = "fwdlink.io";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "https://fwdlink.io";
 
 // Paywall Constants
-export const FREE_QUOTA_LIMIT = 3;
+export const FREE_QUOTA_LIMIT = 10;
 
 // Pricing Constants
 export const PRICING = {
