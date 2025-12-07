@@ -40,8 +40,16 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
+            # Source NVM
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            # Fix git safe directory issue
+            git config --global --add safe.directory ~/fwd-link
+            
+            # Fix ownership if needed (run as current user)
+            sudo chown -R $(whoami):$(whoami) ~/fwd-link || true
+            
             cd ~/fwd-link
             git pull origin main
             npm install
