@@ -147,7 +147,10 @@ export async function getQuotation(
   }
 }
 
-export async function getUserQuotations() {
+export async function getUserQuotations(params?: {
+  search?: string;
+  type?: string;
+}) {
   try {
     const session = await auth();
 
@@ -163,7 +166,23 @@ export async function getUserQuotations() {
       return { success: false, error: "User not found" };
     }
 
-    const quotations = await Quotation.find({ owner: user._id })
+    // Build query
+    const query: any = { owner: user._id };
+
+    if (params?.type && params.type !== "ALL") {
+      query.containerType = params.type;
+    }
+
+    if (params?.search) {
+      const searchRegex = new RegExp(params.search, "i");
+      query.$or = [
+        { "pol.name": searchRegex },
+        { "pod.name": searchRegex },
+        { shortId: searchRegex },
+      ];
+    }
+
+    const quotations = await Quotation.find(query)
       .sort({ createdAt: -1 })
       .limit(20)
       .lean();
