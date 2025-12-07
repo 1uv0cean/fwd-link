@@ -50,7 +50,6 @@ export default async function DashboardPage({
 
           <Link
             href={`/${locale}/quote/new`}
-            target="_blank"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-colors shadow-md"
           >
             <Plus className="w-5 h-5" />
@@ -111,11 +110,16 @@ export default async function DashboardPage({
                 className="p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all">
                 <div className="flex flex-col sm:flex-row justify-between gap-4">
                   <div>
-                    <div className="text-lg font-semibold">
-                      {quote.pol} ➔ {quote.pod}
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg font-semibold">
+                        {typeof quote.pol === 'object' ? quote.pol.name : quote.pol} ➔ {typeof quote.pod === 'object' ? quote.pod.name : quote.pod}
+                      </span>
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600 border border-slate-200">
+                        {quote.containerType || '40HQ'}
+                      </span>
                     </div>
                     <div className="text-2xl font-bold text-blue-800 mt-1">
-                      {formatCurrency(quote.price, quote.currency)}
+                      {formatCurrency(quote.price)}
                     </div>
                     <div className="text-sm text-slate-500 mt-2">
                       {locale === "ko" ? "유효기간" : "Valid until"}: {formatDate(new Date(quote.validUntil), locale as "en" | "ko")}

@@ -15,14 +15,6 @@ export const SUBSCRIPTION_STATUS = {
 
 export type SubscriptionStatus = (typeof SUBSCRIPTION_STATUS)[keyof typeof SUBSCRIPTION_STATUS];
 
-// Currency
-export const CURRENCIES = {
-  USD: "USD",
-  KRW: "KRW",
-} as const;
-
-export type Currency = (typeof CURRENCIES)[keyof typeof CURRENCIES];
-
 // Error Codes
 export const ERROR_CODES = {
   LIMIT_REACHED: "LIMIT_REACHED",
@@ -35,9 +27,3 @@ export const LOCALES = ["en", "ko"] as const;
 export type Locale = (typeof LOCALES)[number];
 
 export const DEFAULT_LOCALE: Locale = "en";
-
-// Default currency by locale
-export const LOCALE_DEFAULTS: Record<Locale, { currency: Currency }> = {
-  en: { currency: "USD" },
-  ko: { currency: "KRW" },
-};

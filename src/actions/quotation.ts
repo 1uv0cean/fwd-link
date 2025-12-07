@@ -1,18 +1,17 @@
 "use server";
 
 import { auth } from "@/lib/auth";
-import type { Currency } from "@/lib/constants";
 import { ERROR_CODES, FREE_QUOTA_LIMIT, SUBSCRIPTION_STATUS } from "@/lib/constants";
 import dbConnect from "@/lib/db";
-import Quotation from "@/models/Quotation";
+import Quotation, { type ContainerType, type IPort } from "@/models/Quotation";
 import User from "@/models/User";
 import { nanoid } from "nanoid";
 
 interface CreateQuotationInput {
-  pol: string;
-  pod: string;
+  pol: IPort;
+  pod: IPort;
+  containerType: ContainerType;
   price: number;
-  currency: Currency;
   validUntil: Date;
 }
 
@@ -67,14 +66,22 @@ export async function createQuotation(
     // Generate a unique short ID (7 chars)
     const shortId = nanoid(7);
 
-    // Create the quotation
+    // Create the quotation (USD only)
     const quotation = await Quotation.create({
       shortId,
       owner: user._id,
-      pol: input.pol.toUpperCase().trim(),
-      pod: input.pod.toUpperCase().trim(),
+      pol: {
+        name: input.pol.name.toUpperCase().trim(),
+        code: input.pol.code?.toUpperCase().trim() || null,
+        country: input.pol.country?.toUpperCase().trim() || "",
+      },
+      pod: {
+        name: input.pod.name.toUpperCase().trim(),
+        code: input.pod.code?.toUpperCase().trim() || null,
+        country: input.pod.country?.toUpperCase().trim() || "",
+      },
+      containerType: input.containerType || "40HQ",
       price: input.price,
-      currency: input.currency,
       validUntil: new Date(input.validUntil),
       views: 0,
     });
@@ -125,8 +132,8 @@ export async function getQuotation(
         shortId: quotation.shortId,
         pol: quotation.pol,
         pod: quotation.pod,
+        containerType: quotation.containerType || "40HQ",
         price: quotation.price,
-        currency: quotation.currency,
         validUntil: quotation.validUntil.toISOString(),
         views: quotation.views + (options.incrementView ? 1 : 0),
       },
@@ -164,8 +171,8 @@ export async function getUserQuotations() {
         shortId: q.shortId,
         pol: q.pol,
         pod: q.pod,
+        containerType: q.containerType || "40HQ",
         price: q.price,
-        currency: q.currency,
         validUntil: q.validUntil.toISOString(),
         views: q.views,
         createdAt: q.createdAt.toISOString(),

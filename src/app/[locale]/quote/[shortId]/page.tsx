@@ -22,30 +22,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const { quotation } = result;
-  const formattedPrice = formatCurrency(quotation.price, quotation.currency);
+  const formattedPrice = formatCurrency(quotation.price);
   
   // Build OG image URL with query params for edge runtime
   const ogParams = new URLSearchParams({
-    pol: quotation.pol,
-    pod: quotation.pod,
+    pol: typeof quotation.pol === 'object' ? quotation.pol.name : quotation.pol,
+    pod: typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod,
     price: quotation.price.toString(),
-    currency: quotation.currency,
     validUntil: quotation.validUntil,
   });
   const ogImageUrl = `${APP_URL}/api/og/${shortId}?${ogParams.toString()}`;
 
+  const polName = typeof quotation.pol === 'object' ? quotation.pol.name : quotation.pol;
+  const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
+
   return {
-    title: `${quotation.pol} ➔ ${quotation.pod} - ${formattedPrice}`,
-    description: `Freight quote from ${quotation.pol} to ${quotation.pod} for ${formattedPrice}`,
+    title: `${polName} ➤ ${podName} - ${formattedPrice}`,
+    description: `Freight quote from ${polName} to ${podName} for ${formattedPrice}`,
     openGraph: {
-      title: `${quotation.pol} ➔ ${quotation.pod} - ${formattedPrice}`,
+      title: `${polName} ➤ ${podName} - ${formattedPrice}`,
       description: `Freight quote valid until ${formatDate(new Date(quotation.validUntil), "en")}`,
       images: [ogImageUrl],
       type: "website",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${quotation.pol} ➔ ${quotation.pod} - ${formattedPrice}`,
+      title: `${polName} ➤ ${podName} - ${formattedPrice}`,
       images: [ogImageUrl],
     },
   };
@@ -62,7 +64,10 @@ export default async function QuoteViewPage({ params }: PageProps) {
   }
 
   const { quotation } = result;
-  const formattedPrice = formatCurrency(quotation.price, quotation.currency);
+  const formattedPrice = formatCurrency(quotation.price);
+  const polName = typeof quotation.pol === 'object' ? quotation.pol.name : quotation.pol;
+  const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
+  const containerType = quotation.containerType || '40HQ';
   
   // Generate localized share URL
   const pathPrefix = locale === "en" ? "" : `/${locale}`;
@@ -79,16 +84,23 @@ export default async function QuoteViewPage({ params }: PageProps) {
           </div>
 
           {/* Route */}
-          <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="flex items-center justify-center gap-4 mb-4">
             <div className="text-center">
               <Ship className="w-6 h-6 text-slate-500 mx-auto mb-1" />
-              <span className="text-2xl font-bold text-slate-900">{quotation.pol}</span>
+              <span className="text-2xl font-bold text-slate-900">{polName}</span>
             </div>
             <span className="text-3xl text-blue-800">➤</span>
             <div className="text-center">
               <Ship className="w-6 h-6 text-slate-500 mx-auto mb-1" />
-              <span className="text-2xl font-bold text-slate-900">{quotation.pod}</span>
+              <span className="text-2xl font-bold text-slate-900">{podName}</span>
             </div>
+          </div>
+
+          {/* Container Type Badge */}
+          <div className="flex justify-center mb-6">
+            <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-sm font-medium border border-slate-200">
+              {containerType}
+            </span>
           </div>
 
           {/* Price - The Star */}
@@ -122,7 +134,7 @@ export default async function QuoteViewPage({ params }: PageProps) {
           {/* Share Buttons */}
           <ShareButtons
             url={shareUrl}
-            title={`${quotation.pol} ➔ ${quotation.pod} - ${formattedPrice}`}
+            title={`${polName} ➤ ${podName} - ${formattedPrice}`}
             locale={locale}
           />
         </div>

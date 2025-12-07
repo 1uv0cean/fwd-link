@@ -19,20 +19,18 @@ export async function GET(
     const pol = searchParams.get("pol") || "ORIGIN";
     const pod = searchParams.get("pod") || "DESTINATION";
     const price = searchParams.get("price") || "0";
-    const currency = searchParams.get("currency") || "USD";
     const validUntil = searchParams.get("validUntil") || "";
 
-    // Format price
-    const formattedPrice = currency === "KRW"
-      ? `₩${Number(price).toLocaleString("ko-KR")}`
-      : `$${Number(price).toLocaleString("en-US")}`;
+    // Format price (USD only)
+    const formattedPrice = `$${Number(price).toLocaleString("en-US")}`;
 
     // Format date
     const validDate = validUntil
-      ? new Date(validUntil).toLocaleDateString(
-          currency === "KRW" ? "ko-KR" : "en-US",
-          { year: "numeric", month: "short", day: "numeric" }
-        )
+      ? new Date(validUntil).toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+        })
       : "";
 
     return new ImageResponse(

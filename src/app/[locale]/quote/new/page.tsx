@@ -41,7 +41,7 @@ export default async function NewQuotePage({
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700">
+        <div className="p-6 rounded-2xl bg-slate-200 border border-slate-700">
           <QuoteForm locale={locale} />
         </div>
       </div>
