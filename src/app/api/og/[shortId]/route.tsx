@@ -78,18 +78,19 @@ export async function GET(
               color: "#ffffff",
             }}
           >
-            <div style={{ marginRight: 20 }}>{polFlag}</div>
-            {pol}
+            <span style={{ display: "flex", marginRight: 20 }}>{polFlag}</span>
+            <span style={{ display: "flex" }}>{pol}</span>
             <span
               style={{
+                display: "flex",
                 margin: "0 30px",
                 color: "#4facfe",
               }}
             >
-              ➔
+              →
             </span>
-            <div style={{ marginRight: 20 }}>{podFlag}</div>
-            {pod}
+            <span style={{ display: "flex", marginRight: 20 }}>{podFlag}</span>
+            <span style={{ display: "flex" }}>{pod}</span>
           </div>
 
           {/* Price - The Star */}
@@ -142,8 +143,8 @@ export async function GET(
             fontFamily: "sans-serif",
           }}
         >
-          <div style={{ fontSize: 48, fontWeight: "bold" }}>FwdLink</div>
-          <div style={{ fontSize: 24, marginTop: 20, color: "#a0a0a0" }}>
+          <div style={{ display: "flex", fontSize: 48, fontWeight: "bold" }}>FwdLink</div>
+          <div style={{ display: "flex", fontSize: 24, marginTop: 20, color: "#a0a0a0" }}>
             Freight Quotation
           </div>
         </div>
