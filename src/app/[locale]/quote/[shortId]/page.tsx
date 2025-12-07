@@ -146,7 +146,7 @@ export default async function QuoteViewPage({ params }: PageProps) {
           {/* Share Buttons */}
           <ShareButtons
             url={shareUrl}
-            title={`${polName} ➤ ${podName} - ${formattedPrice}`}
+            title={`${polName} ➔ ${podName} - ${formattedPrice}`}
             locale={locale}
           />
         </div>

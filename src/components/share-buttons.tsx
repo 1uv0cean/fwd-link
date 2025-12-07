@@ -21,12 +21,9 @@ export default function ShareButtons({ url, title, locale }: ShareButtonsProps) 
   const [copied, setCopied] = useState(false);
   const isKorean = locale === "ko";
 
-  // Professional business message
+  // Professional business message - Simplified for reuse
   const getBusinessMessage = () => {
-    if (isKorean) {
-      return `운임 견적서가 도착했습니다\n\n${title}\n\n아래 링크에서 상세 내용을 확인해 주세요:\n${url}\n\n- FwdLink`;
-    }
-    return `Freight Quotation\n\n${title}\n\nPlease review the details at the link below:\n${url}\n\n- FwdLink`;
+    return `${title}\n\n${url}`;
   };
 
   const handleShare = async () => {
@@ -38,7 +35,6 @@ export default function ShareButtons({ url, title, locale }: ShareButtonsProps) 
         await navigator.share({
           title: isKorean ? "FwdLink 운임 견적서" : "FwdLink Freight Quotation",
           text: message,
-          url: url,
         });
         return;
       } catch (error) {
@@ -68,8 +64,8 @@ export default function ShareButtons({ url, title, locale }: ShareButtonsProps) 
       : `[FwdLink] Freight Quotation - ${title}`;
 
     const body = isKorean
-      ? `안녕하세요,\n\n아래와 같이 운임 견적서를 보내드립니다.\n\n${title}\n\n상세 내용은 아래 링크에서 확인해 주세요:\n${url}\n\n감사합니다.\n\n---\nFwdLink - 10초 만에 전문 운임 견적서`
-      : `Hello,\n\nPlease find the freight quotation below.\n\n${title}\n\nView full details at:\n${url}\n\nBest regards,\n\n---\nFwdLink - Professional Freight Quotes in 10 Seconds`;
+      ? `안녕하세요,\n\n운임 견적서를 공유드립니다.\n\n${title}\n\n견적서 확인하기:\n${url}\n\n감사합니다.\nFwdLink`
+      : `Hello,\n\nHere is the freight quotation you requested.\n\n${title}\n\nView Quote:\n${url}\n\nBest regards,\nFwdLink`;
 
     const mailtoUrl = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
     window.open(mailtoUrl);
