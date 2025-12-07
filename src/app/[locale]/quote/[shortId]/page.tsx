@@ -24,14 +24,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { quotation } = result;
   const formattedPrice = formatCurrency(quotation.price);
   
-  // Build OG image URL with query params for edge runtime
-  const ogParams = new URLSearchParams({
-    pol: typeof quotation.pol === 'object' ? quotation.pol.name : quotation.pol,
-    pod: typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod,
-    price: quotation.price.toString(),
-    validUntil: quotation.validUntil,
-  });
-  const ogImageUrl = `${APP_URL}/api/og/${shortId}?${ogParams.toString()}`;
+  // Use static OG image
+  const ogImageUrl = `${APP_URL}/og-image.png`;
 
   const polName = typeof quotation.pol === 'object' ? quotation.pol.name : quotation.pol;
   const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
