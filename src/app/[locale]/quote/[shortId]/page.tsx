@@ -72,47 +72,47 @@ export default async function QuoteViewPage({ params }: PageProps) {
     <main className="min-h-screen flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         {/* Quote Card */}
-        <div className="p-8 rounded-3xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-700 shadow-2xl">
+        <div className="p-8 rounded-3xl bg-white border border-slate-200 shadow-xl">
           {/* Brand */}
           <div className="text-center mb-6">
-            <span className="text-blue-400 font-semibold">FwdLink</span>
+            <span className="text-blue-900 font-semibold">FwdLink</span>
           </div>
 
           {/* Route */}
           <div className="flex items-center justify-center gap-4 mb-6">
             <div className="text-center">
-              <Ship className="w-6 h-6 text-slate-400 mx-auto mb-1" />
-              <span className="text-2xl font-bold">{quotation.pol}</span>
+              <Ship className="w-6 h-6 text-slate-500 mx-auto mb-1" />
+              <span className="text-2xl font-bold text-slate-900">{quotation.pol}</span>
             </div>
-            <span className="text-3xl text-blue-400">➔</span>
+            <span className="text-3xl text-blue-800">➤</span>
             <div className="text-center">
-              <Ship className="w-6 h-6 text-slate-400 mx-auto mb-1" />
-              <span className="text-2xl font-bold">{quotation.pod}</span>
+              <Ship className="w-6 h-6 text-slate-500 mx-auto mb-1" />
+              <span className="text-2xl font-bold text-slate-900">{quotation.pod}</span>
             </div>
           </div>
 
           {/* Price - The Star */}
           <div className="text-center mb-6">
-            <div className="text-5xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+            <div className="text-5xl font-bold text-blue-900">
               {formattedPrice}
             </div>
           </div>
 
           {/* Details */}
-          <div className="flex justify-between items-center p-4 rounded-xl bg-slate-800/50 mb-6">
-            <div className="flex items-center gap-2 text-slate-400">
+          <div className="flex justify-between items-center p-4 rounded-xl bg-slate-50 border border-slate-200 mb-6">
+            <div className="flex items-center gap-2 text-slate-600">
               <Calendar className="w-4 h-4" />
               <span className="text-sm">
                 {locale === "ko" ? "유효기간" : "Valid until"}
               </span>
             </div>
-            <span className="font-medium">
+            <span className="font-medium text-slate-800">
               {formatDate(new Date(quotation.validUntil), locale as "en" | "ko")}
             </span>
           </div>
 
           {/* Views */}
-          <div className="flex items-center justify-center gap-2 text-slate-400 mb-6">
+          <div className="flex items-center justify-center gap-2 text-slate-500 mb-6">
             <Eye className="w-4 h-4" />
             <span className="text-sm">
               {quotation.views} {locale === "ko" ? "회 조회됨" : "views"}

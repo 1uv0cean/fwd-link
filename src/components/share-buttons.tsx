@@ -89,11 +89,10 @@ export default function ShareButtons({ url, title, locale }: ShareButtonsProps) 
         </Button>
       )}
 
-      {/* Copy Link */}
       <Button
         variant="outline"
         onClick={handleCopyLink}
-        className="w-full h-14 text-base font-semibold border-slate-600 text-slate-300 hover:bg-slate-800"
+        className="w-full h-14 text-base font-semibold border-slate-300 text-slate-700 hover:bg-slate-100"
       >
         {copied ? (
           <>

@@ -3,19 +3,19 @@
 import { createQuotation } from "@/actions/quotation";
 import { Button } from "@/components/ui/button";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
 } from "@/components/ui/select";
 import type { Currency } from "@/lib/constants";
 import { ERROR_CODES, LOCALE_DEFAULTS } from "@/lib/constants";
@@ -84,7 +84,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
         {/* Route Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
               <Ship className="w-4 h-4" />
               {locale === "ko" ? "선적항 (POL)" : "Port of Loading"}
             </label>
@@ -94,12 +94,12 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
               onChange={(e) => setFormData({ ...formData, pol: e.target.value.toUpperCase() })}
               placeholder={locale === "ko" ? "예: BUSAN" : "e.g., BUSAN"}
               required
-              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 uppercase"
+              className="bg-white border-slate-300 text-slate-800 placeholder:text-slate-400 uppercase"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
               <Ship className="w-4 h-4" />
               {locale === "ko" ? "도착항 (POD)" : "Port of Discharge"}
             </label>
@@ -109,7 +109,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
               onChange={(e) => setFormData({ ...formData, pod: e.target.value.toUpperCase() })}
               placeholder={locale === "ko" ? "예: LA" : "e.g., LA"}
               required
-              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500 uppercase"
+              className="bg-white border-slate-300 text-slate-800 placeholder:text-slate-400 uppercase"
             />
           </div>
         </div>
@@ -117,7 +117,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
         {/* Price Section */}
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               {locale === "ko" ? "가격" : "Price"}
             </label>
@@ -129,12 +129,12 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
               required
               min="0"
               step="0.01"
-              className="bg-slate-800 border-slate-700 text-white placeholder:text-slate-500"
+              className="bg-white border-slate-300 text-slate-800 placeholder:text-slate-400"
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+            <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
               <DollarSign className="w-4 h-4" />
               {locale === "ko" ? "통화" : "Currency"}
             </label>
@@ -142,12 +142,12 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
               value={formData.currency}
               onValueChange={(value) => setFormData({ ...formData, currency: value as Currency })}
             >
-              <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+              <SelectTrigger className="bg-white border-slate-300 text-slate-800">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
-                <SelectItem value="USD" className="text-white hover:bg-slate-700">$ USD</SelectItem>
-                <SelectItem value="KRW" className="text-white hover:bg-slate-700">₩ KRW</SelectItem>
+              <SelectContent className="bg-white border-slate-200">
+                <SelectItem value="USD" className="text-slate-800 hover:bg-slate-100">$ USD</SelectItem>
+                <SelectItem value="KRW" className="text-slate-800 hover:bg-slate-100">₩ KRW</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -155,7 +155,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
 
         {/* Valid Until */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-slate-300 flex items-center gap-2">
+          <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
             <Calendar className="w-4 h-4" />
             {locale === "ko" ? "유효기간" : "Valid Until"}
           </label>
@@ -164,7 +164,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
             value={formData.validUntil || defaultDateStr}
             onChange={(e) => setFormData({ ...formData, validUntil: e.target.value })}
             required
-            className="bg-slate-800 border-slate-700 text-white"
+            className="bg-white border-slate-300 text-slate-800"
           />
         </div>
 
@@ -179,7 +179,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-blue-500 to-cyan-500 hover:opacity-90"
+          className="w-full h-14 text-lg font-semibold bg-blue-900 hover:bg-blue-800 shadow-md"
         >
           {isLoading ? (
             <>
@@ -194,12 +194,12 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
 
       {/* Upgrade Modal */}
       <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
-        <DialogContent className="bg-slate-900 border-slate-700">
+        <DialogContent className="bg-white border-slate-200">
           <DialogHeader>
             <DialogTitle>
               {locale === "ko" ? "무료 견적서를 모두 사용하셨습니다" : "You've used all free quotes"}
             </DialogTitle>
-            <DialogDescription className="text-slate-400">
+            <DialogDescription className="text-slate-600">
               {locale === "ko"
                 ? "Pro로 업그레이드하여 무제한 견적서를 작성하세요."
                 : "Upgrade to Pro for unlimited quotes."}
@@ -208,7 +208,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
           <div className="space-y-3 mt-4">
             <Button
               asChild
-              className="w-full bg-gradient-to-r from-blue-500 to-cyan-500"
+              className="w-full bg-blue-900 hover:bg-blue-800"
             >
               <a href={`/${locale}/upgrade`}>
                 {locale === "ko" ? "Pro로 업그레이드" : "Upgrade to Pro"}
@@ -216,7 +216,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
             </Button>
             <Button
               variant="outline"
-              className="w-full border-slate-700 text-slate-300 hover:bg-slate-800"
+              className="w-full border-slate-300 text-slate-700 hover:bg-slate-100"
               onClick={() => setShowUpgradeModal(false)}
             >
               {locale === "ko" ? "나중에" : "Maybe later"}

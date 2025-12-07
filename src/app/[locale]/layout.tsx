@@ -41,7 +41,7 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
-        className={`${inter.variable} ${notoSansKR.variable} font-sans antialiased bg-slate-950 text-white min-h-screen`}
+        className={`${inter.variable} ${notoSansKR.variable} font-sans antialiased bg-slate-50 text-slate-800 min-h-screen`}
       >
         <NextIntlClientProvider messages={messages}>
           {children}

@@ -43,14 +43,14 @@ export default async function DashboardPage({
             <h1 className="text-2xl md:text-3xl font-bold">
               {locale === "ko" ? "대시보드" : "Dashboard"}
             </h1>
-            <p className="text-slate-400 mt-1">
+            <p className="text-slate-500 mt-1">
               {locale === "ko" ? "다시 오신 것을 환영합니다" : "Welcome back"}, {session.user.name}
             </p>
           </div>
 
           <Link
             href={`/${locale}/quote/new`}
-            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold hover:opacity-90 transition-opacity"
+            className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-colors shadow-md"
           >
             <Plus className="w-5 h-5" />
             {locale === "ko" ? "견적서 작성" : "Create Quote"}
@@ -58,23 +58,23 @@ export default async function DashboardPage({
         </div>
 
         {/* Usage Progress */}
-        <div className="p-6 rounded-2xl bg-slate-800/50 border border-slate-700 mb-8">
+        <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm mb-8">
           <div className="flex justify-between items-center mb-3">
-            <span className="text-slate-300 font-medium">
+            <span className="text-slate-700 font-medium">
               {locale === "ko" ? "무료 견적서" : "Free Quotes"}
             </span>
-            <span className="text-sm text-slate-400">
+            <span className="text-sm text-slate-500">
               {usageCount}/{FREE_QUOTA_LIMIT} {locale === "ko" ? "사용됨" : "used"}
             </span>
           </div>
-          <div className="w-full h-3 bg-slate-700 rounded-full overflow-hidden">
+          <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
             <div
               className={`h-full rounded-full transition-all ${
                 usagePercentage >= 100
                   ? "bg-red-500"
                   : usagePercentage >= 80
                   ? "bg-yellow-500"
-                  : "bg-gradient-to-r from-blue-500 to-cyan-500"
+                  : "bg-blue-600"
               }`}
               style={{ width: `${usagePercentage}%` }}
             />
@@ -82,7 +82,7 @@ export default async function DashboardPage({
           {usageCount >= FREE_QUOTA_LIMIT && (
             <Link
               href={`/${locale}/upgrade`}
-              className="inline-block mt-4 text-blue-400 hover:text-blue-300 text-sm"
+              className="inline-block mt-4 text-blue-700 hover:text-blue-900 text-sm font-medium"
             >
               {locale === "ko" ? "Pro로 업그레이드하기 →" : "Upgrade to Pro →"}
             </Link>
@@ -95,8 +95,8 @@ export default async function DashboardPage({
         </h2>
 
         {quotations.length === 0 ? (
-          <div className="p-12 rounded-2xl bg-slate-800/30 border border-slate-700 text-center">
-            <p className="text-slate-400">
+          <div className="p-12 rounded-2xl bg-white border border-slate-200 text-center">
+            <p className="text-slate-500">
               {locale === "ko"
                 ? "견적서가 없습니다. 첫 번째 견적서를 작성해보세요!"
                 : "No quotes yet. Create your first one!"}
@@ -107,29 +107,28 @@ export default async function DashboardPage({
             {quotations.map((quote) => (
               <div
                 key={quote.shortId}
-                className="p-4 rounded-xl bg-slate-800/50 border border-slate-700 hover:border-slate-600 transition-colors"
-              >
+                className="p-4 rounded-xl bg-white border border-slate-200 hover:border-slate-300 hover:shadow-md transition-all">
                 <div className="flex flex-col sm:flex-row justify-between gap-4">
                   <div>
                     <div className="text-lg font-semibold">
                       {quote.pol} ➔ {quote.pod}
                     </div>
-                    <div className="text-2xl font-bold text-blue-400 mt-1">
+                    <div className="text-2xl font-bold text-blue-800 mt-1">
                       {formatCurrency(quote.price, quote.currency)}
                     </div>
-                    <div className="text-sm text-slate-400 mt-2">
+                    <div className="text-sm text-slate-500 mt-2">
                       {locale === "ko" ? "유효기간" : "Valid until"}: {formatDate(new Date(quote.validUntil), locale as "en" | "ko")}
                     </div>
                   </div>
 
                   <div className="flex sm:flex-col items-center sm:items-end gap-4 sm:gap-2">
-                    <div className="flex items-center gap-1 text-sm text-slate-400">
+                    <div className="flex items-center gap-1 text-sm text-slate-500">
                       <Eye className="w-4 h-4" />
                       {quote.views} {locale === "ko" ? "회 조회" : "views"}
                     </div>
                     <Link
                       href={`/${locale}/quote/${quote.shortId}`}
-                      className="inline-flex items-center gap-1 text-sm text-blue-400 hover:text-blue-300"
+                      className="inline-flex items-center gap-1 text-sm text-blue-700 hover:text-blue-900 font-medium"
                     >
                       {locale === "ko" ? "보기" : "View"}
                       <ExternalLink className="w-4 h-4" />
