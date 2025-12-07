@@ -1,8 +1,8 @@
 import { getQuotation } from "@/actions/quotation";
 import ShareButtons from "@/components/share-buttons";
 import { APP_URL } from "@/lib/constants";
-import { formatCurrency, formatDate } from "@/lib/utils";
-import { Calendar, Eye, Ship } from "lucide-react";
+import { formatCurrency, formatDate, getFlagFromPort } from "@/lib/utils";
+import { Calendar, Eye } from "lucide-react";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -69,6 +69,9 @@ export default async function QuoteViewPage({ params }: PageProps) {
   const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
   const containerType = quotation.containerType || '40HQ';
   
+  const polFlag = getFlagFromPort(quotation.pol);
+  const podFlag = getFlagFromPort(quotation.pod);
+
   // Generate localized share URL - always include locale prefix
   const shareUrl = `${APP_URL}/${locale}/quote/${shortId}`;
 
@@ -82,15 +85,15 @@ export default async function QuoteViewPage({ params }: PageProps) {
             <span className="text-blue-900 font-semibold">FwdLink</span>
           </div>
 
-          {/* Route */}
+          {/* Route with Flags */}
           <div className="flex items-center justify-center gap-4 mb-4">
             <div className="text-center">
-              <Ship className="w-6 h-6 text-slate-500 mx-auto mb-1" />
+              <div className="text-4xl mb-2">{polFlag}</div>
               <span className="text-2xl font-bold text-slate-900">{polName}</span>
             </div>
-            <span className="text-3xl text-blue-800">➤</span>
+            <span className="text-3xl text-blue-800 self-center mt-[-20px]">➤</span>
             <div className="text-center">
-              <Ship className="w-6 h-6 text-slate-500 mx-auto mb-1" />
+              <div className="text-4xl mb-2">{podFlag}</div>
               <span className="text-2xl font-bold text-slate-900">{podName}</span>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { getFlagFromPort } from "@/lib/utils";
 import { ImageResponse } from "@vercel/og";
 import { NextRequest } from "next/server";
 
@@ -20,6 +21,9 @@ export async function GET(
     const pod = searchParams.get("pod") || "DESTINATION";
     const price = searchParams.get("price") || "0";
     const validUntil = searchParams.get("validUntil") || "";
+
+    const polFlag = getFlagFromPort(pol);
+    const podFlag = getFlagFromPort(pod);
 
     // Format price (USD only)
     const formattedPrice = `$${Number(price).toLocaleString("en-US")}`;
@@ -74,6 +78,7 @@ export async function GET(
               color: "#ffffff",
             }}
           >
+            <div style={{ marginRight: 20 }}>{polFlag}</div>
             {pol}
             <span
               style={{
@@ -83,6 +88,7 @@ export async function GET(
             >
               ➔
             </span>
+            <div style={{ marginRight: 20 }}>{podFlag}</div>
             {pod}
           </div>
 

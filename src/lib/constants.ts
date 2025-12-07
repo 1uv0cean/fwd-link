@@ -40,4 +40,6 @@ export const ERROR_CODES = {
 export const LOCALES = ["en", "ko"] as const;
 export type Locale = (typeof LOCALES)[number];
 
+
+
 export const DEFAULT_LOCALE: Locale = "en";
