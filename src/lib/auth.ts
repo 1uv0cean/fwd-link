@@ -3,7 +3,7 @@ import { MongoDBAdapter } from "@auth/mongodb-adapter";
 import NextAuth from "next-auth";
 import type { Provider } from "next-auth/providers";
 import Google from "next-auth/providers/google";
-import Resend from "next-auth/providers/resend";
+import Nodemailer from "next-auth/providers/nodemailer";
 import { SUBSCRIPTION_STATUS } from "./constants";
 import dbConnect from "./db";
 import clientPromise from "./mongodb-client";
@@ -36,13 +36,24 @@ const providers: Provider[] = [
   }),
 ];
 
-// Only add Resend if the API key is available and valid
-const resendKey = process.env.AUTH_RESEND_KEY;
-if (resendKey && !resendKey.includes("<") && resendKey.length > 10) {
+// Add Nodemailer (AWS SES) if credentials are available
+const sesHost = process.env.AWS_SES_SMTP_HOST;
+const sesUser = process.env.AWS_SES_SMTP_USER;
+const sesPass = process.env.AWS_SES_SMTP_PASS;
+
+if (sesHost && sesUser && sesPass) {
   providers.push(
-    Resend({
-      apiKey: resendKey,
-      from: process.env.AUTH_RESEND_FROM || "noreply@fwdlink.io",
+    Nodemailer({
+      server: {
+        host: sesHost,
+        port: 465,
+        secure: true,
+        auth: {
+          user: sesUser,
+          pass: sesPass,
+        },
+      },
+      from: process.env.AUTH_EMAIL_FROM || "noreply@fwdlink.io",
     })
   );
 }
