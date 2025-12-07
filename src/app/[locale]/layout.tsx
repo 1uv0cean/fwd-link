@@ -6,6 +6,9 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { Inter, Noto_Sans_KR } from "next/font/google";
 import { notFound } from "next/navigation";
+import Script from "next/script";
+
+const GA_TRACKING_ID = "G-CR2B1D3MXG";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -87,6 +90,19 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} suppressHydrationWarning>
       <head>
+        {/* Google Analytics */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=${GA_TRACKING_ID}`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', '${GA_TRACKING_ID}');
+          `}
+        </Script>
         {/* Structured Data */}
         <OrganizationJsonLd />
         <WebApplicationJsonLd locale={locale} />
