@@ -37,6 +37,8 @@ export const metadata: Metadata = {
     "운임 견적",
     "해상 운송",
     "포워딩",
+    "포워드링크",
+    "포워드 링크",
   ],
   authors: [{ name: "FwdLink" }],
   creator: "FwdLink",
