@@ -40,21 +40,39 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_KEY }}
           script: |
-            # Source NVM
+            # Load shell environment
+            source ~/.bashrc || true
+            source ~/.profile || true
             export NVM_DIR="$HOME/.nvm"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            
+            # Ensure common paths are in PATH
+            export PATH="$HOME/.local/bin:/usr/local/bin:$PATH"
+            
+            # Debug: show node location
+            which node || echo "Node not found in PATH"
+            node --version || echo "Node version check failed"
             
             # Fix git safe directory issue
             git config --global --add safe.directory ~/fwd-link
             
-            # Fix ownership if needed (run as current user)
+            # Fix ownership if needed
             sudo chown -R $(whoami):$(whoami) ~/fwd-link || true
             
             cd ~/fwd-link
             git pull origin main
             npm install
-            npm run build
-            pm2 restart fwd-link || pm2 start npm --name "fwd-link" -- start
+            
+            # Build using npx to ensure next is found in local node_modules
+            npx next build
+            
+            # Only restart if build succeeded
+            if [ -d ".next" ]; then
+              pm2 restart fwd-link || pm2 start npm --name "fwd-link" -- start
+            else
+              echo "Build failed - .next directory not found"
+              exit 1
+            fi
 
       - name: Verify deployment
         uses: appleboy/ssh-action@v1.0.3
