@@ -2,7 +2,7 @@ import { getQuotation } from "@/actions/quotation";
 import ShareButtons from "@/components/share-buttons";
 import { APP_URL } from "@/lib/constants";
 import { formatCurrency, formatDate, getFlagFromPort } from "@/lib/utils";
-import { Calendar, Eye } from "lucide-react";
+import { Calendar } from "lucide-react";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -128,14 +128,6 @@ export default async function QuoteViewPage({ params }: PageProps) {
               <p className="text-slate-800 whitespace-pre-wrap">{quotation.remarks}</p>
             </div>
           )}
-
-          {/* Views */}
-          <div className="flex items-center justify-center gap-2 text-slate-500 mb-6">
-            <Eye className="w-4 h-4" />
-            <span className="text-sm">
-              {quotation.views} {locale === "ko" ? "회 조회됨" : "views"}
-            </span>
-          </div>
 
           {/* Share Buttons */}
           <ShareButtons
