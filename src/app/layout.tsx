@@ -9,13 +9,22 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://fwdlink.io"),
-  title: {
-    default: "FwdLink - Professional Freight Quotes in 10 Seconds",
+ title: {
+    default: "FwdLink | 10-Second Freight Quotes for Forwarders",
     template: "%s | FwdLink",
   },
-  description:
-    "Stop using Excel. Send professional freight quotes via WhatsApp link in 10 seconds. The fastest way to share shipping rates.",
+  description: "Create professional freight quotes in 10 seconds. Replace Excel with mobile-friendly links. Free tool for Logistics & Freight Forwarders.",
   keywords: [
+    "Freight Quote", 
+    "Logistics Tool", 
+    "Forwarder SaaS", 
+    "Ocean Freight", 
+    "FwdLink",
+    "10-Second Freight Quotes",
+    "Professional Freight Quotes",
+    "Freight Forwarding",
+    "Freight Forwarder",
+    "Freight Forwarding Software",
     "freight quote",
     "shipping",
     "logistics",
