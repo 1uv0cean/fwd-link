@@ -77,18 +77,22 @@ function mapSubscriptionStatus(
       return SUBSCRIPTION_STATUS.PAST_DUE;
 
     case "subscription_updated":
-      // Check if subscription is still active
-      if (attributes.status === "active") {
-        return SUBSCRIPTION_STATUS.ACTIVE;
-      } else if (attributes.status === "past_due") {
-        return SUBSCRIPTION_STATUS.PAST_DUE;
-      } else if (
-        attributes.status === "cancelled" ||
-        attributes.status === "expired"
+      // Check exact status from Lemon Squeezy
+      // Statuses: on_trial, active, paused, past_due, unpaid, cancelled, expired
+      if (
+        attributes.status === "active" ||
+        attributes.status === "on_trial"
       ) {
+        return SUBSCRIPTION_STATUS.ACTIVE;
+      } else if (
+        attributes.status === "past_due" ||
+        attributes.status === "unpaid"
+      ) {
+        return SUBSCRIPTION_STATUS.PAST_DUE;
+      } else {
+        // cancelled, expired, paused, or unknown
         return SUBSCRIPTION_STATUS.FREE;
       }
-      return SUBSCRIPTION_STATUS.ACTIVE;
 
     default:
       return SUBSCRIPTION_STATUS.FREE;
