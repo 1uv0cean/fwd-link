@@ -116,7 +116,7 @@ function HomePageContent({ locale }: { locale: string }) {
       <footer className="py-8 px-4 border-t border-slate-200 bg-slate-50">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
           <p className="text-slate-500">
-            © 2024 FwdLink. All rights reserved.
+            © 2025 FwdLink. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
             <Link
