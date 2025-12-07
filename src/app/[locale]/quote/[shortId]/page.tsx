@@ -123,6 +123,16 @@ export default async function QuoteViewPage({ params }: PageProps) {
             </span>
           </div>
 
+          {/* Remarks */}
+          {quotation.remarks && quotation.remarks.length > 0 && (
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 mb-6">
+              <div className="text-sm text-slate-600 mb-2">
+                {locale === "ko" ? "비고" : "Remarks"}
+              </div>
+              <p className="text-slate-800 whitespace-pre-wrap">{quotation.remarks}</p>
+            </div>
+          )}
+
           {/* Views */}
           <div className="flex items-center justify-center gap-2 text-slate-500 mb-6">
             <Eye className="w-4 h-4" />

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ERROR_CODES } from "@/lib/constants";
-import { Calendar, DollarSign, Loader2, Ship } from "lucide-react";
+import { Calendar, DollarSign, FileText, Loader2, Ship } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
@@ -35,6 +35,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
   const [containerType, setContainerType] = useState<ContainerType>("40HQ");
   const [price, setPrice] = useState("");
   const [validUntil, setValidUntil] = useState("");
+  const [remarks, setRemarks] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,6 +62,7 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
         },
         containerType,
         price: Number(price),
+        remarks,
         validUntil: new Date(validUntil || defaultDateStr),
       });
 
@@ -156,6 +158,23 @@ export default function QuoteForm({ locale }: QuoteFormProps) {
             required
             className="bg-white border-slate-300 text-slate-800"
           />
+        </div>
+
+        {/* Remarks */}
+        <div className="space-y-2">
+          <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
+            <FileText className="w-4 h-4" />
+            {locale === "ko" ? "비고 (선택사항)" : "Remarks (Optional)"}
+          </label>
+          <textarea
+            value={remarks}
+            onChange={(e) => setRemarks(e.target.value)}
+            placeholder={locale === "ko" ? "추가 정보를 입력하세요..." : "Enter additional notes..."}
+            maxLength={500}
+            rows={3}
+            className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+          />
+          <p className="text-xs text-slate-500 text-right">{remarks.length}/500</p>
         </div>
 
         {/* Error Message */}

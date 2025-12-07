@@ -18,6 +18,7 @@ export interface IQuotation extends Document {
   pod: IPort;
   containerType: ContainerType;
   price: number;
+  remarks?: string;
   validUntil: Date;
   views: number;
   createdAt: Date;
@@ -71,6 +72,13 @@ const QuotationSchema = new Schema<IQuotation>(
       type: Number,
       required: [true, "Price is required"],
       min: [0, "Price must be positive"],
+    },
+    // Optional remarks/notes
+    remarks: {
+      type: String,
+      default: "",
+      maxlength: [500, "Remarks cannot exceed 500 characters"],
+      trim: true,
     },
     // Quote validity date
     validUntil: {

@@ -12,6 +12,7 @@ interface CreateQuotationInput {
   pod: IPort;
   containerType: ContainerType;
   price: number;
+  remarks?: string;
   validUntil: Date;
 }
 
@@ -82,6 +83,7 @@ export async function createQuotation(
       },
       containerType: input.containerType || "40HQ",
       price: input.price,
+      remarks: input.remarks?.trim() || "",
       validUntil: new Date(input.validUntil),
       views: 0,
     });
@@ -134,6 +136,7 @@ export async function getQuotation(
         pod: quotation.pod,
         containerType: quotation.containerType || "40HQ",
         price: quotation.price,
+        remarks: quotation.remarks || "",
         validUntil: quotation.validUntil.toISOString(),
         views: quotation.views + (options.incrementView ? 1 : 0),
       },
@@ -173,6 +176,7 @@ export async function getUserQuotations() {
         pod: q.pod,
         containerType: q.containerType || "40HQ",
         price: q.price,
+        remarks: q.remarks || "",
         validUntil: q.validUntil.toISOString(),
         views: q.views,
         createdAt: q.createdAt.toISOString(),
