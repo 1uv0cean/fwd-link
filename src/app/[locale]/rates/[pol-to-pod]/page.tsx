@@ -222,8 +222,8 @@ export default async function RatePage({
 
             <p className="text-md text-slate-500 mb-8 max-w-2xl mx-auto">
               {isKorean
-                ? "FwdLink에서 즉시 견적을 확인하세요. 10초 만에 전문 운임 견적서를 생성할 수 있습니다."
-                : "Check instant quotes via FwdLink. Create professional freight quotations in just 10 seconds."}
+                ? "이 구간에 대한 전문 견적서를 만들고, 고객에게 즉시 보내세요."
+                : "Create professional quotes for this route. Send instant quotes to your clients."}
             </p>
 
             {/* CTA Button */}
@@ -231,7 +231,7 @@ export default async function RatePage({
               href={`/${locale}/auth/signin`}
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-blue-900 text-white font-semibold text-lg hover:bg-blue-800 transition-all shadow-lg hover:shadow-xl hover:scale-105"
             >
-              {isKorean ? "무료 견적 생성하기" : "Get Free Quote Now"}
+              {isKorean ? "무료로 견적 산출 시작하기" : "Start Quoting for Free"}
               <ArrowRight className="w-5 h-5" />
             </Link>
 
