@@ -144,6 +144,11 @@ export async function POST(request: NextRequest) {
       subscriptionStatus: newStatus,
     };
 
+    // Save subscription end date if present
+    if (data.attributes.ends_at) {
+      updateData.subscriptionEndDate = new Date(data.attributes.ends_at);
+    }
+
     // Store Lemon Squeezy customer ID for future reference
     if (data.attributes.customer_id) {
       updateData.lemonCustomerId = String(data.attributes.customer_id);

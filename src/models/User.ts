@@ -8,6 +8,7 @@ export interface IUser extends Document {
   image?: string;
   usageCount: number;
   subscriptionStatus: SubscriptionStatus;
+  subscriptionEndDate?: Date;
   lemonCustomerId?: string;
   provider: "google" | "email";
   emailVerified?: Date;
@@ -43,6 +44,10 @@ const UserSchema = new Schema<IUser>(
       type: String,
       enum: Object.values(SUBSCRIPTION_STATUS),
       default: SUBSCRIPTION_STATUS.FREE,
+    },
+    // Subscription end date
+    subscriptionEndDate: {
+      type: Date,
     },
     // Lemon Squeezy customer ID for billing sync
     lemonCustomerId: {

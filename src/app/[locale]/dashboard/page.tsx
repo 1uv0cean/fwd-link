@@ -31,8 +31,19 @@ export default async function DashboardPage({
     );
   }
 
-  const { quotations = [], usageCount = 0 } = result;
+  const { quotations = [], usageCount = 0, subscriptionStatus, subscriptionEndDate } = result;
+  
+  const isPro = subscriptionStatus === "active";
   const usagePercentage = Math.min((usageCount / FREE_QUOTA_LIMIT) * 100, 100);
+
+  // Calculate remaining days if Pro
+  let remainingDays = 0;
+  if (subscriptionEndDate) {
+    const end = new Date(subscriptionEndDate);
+    const now = new Date();
+    const diffTime = end.getTime() - now.getTime();
+    remainingDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+  }
 
   return (
     <main className="min-h-screen p-4 md:p-8">
@@ -40,9 +51,16 @@ export default async function DashboardPage({
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold">
-              {locale === "ko" ? "대시보드" : "Dashboard"}
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold">
+                {locale === "ko" ? "대시보드" : "Dashboard"}
+              </h1>
+              {isPro && (
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-gradient-to-r from-blue-600 to-cyan-500 text-white shadow-sm">
+                  PRO
+                </span>
+              )}
+            </div>
             <p className="text-slate-500 mt-1">
               {locale === "ko" ? "다시 오신 것을 환영합니다" : "Welcome back"}, {session.user.name}
             </p>
@@ -72,37 +90,39 @@ export default async function DashboardPage({
           </div>
         </div>
 
-        {/* Usage Progress */}
-        <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm mb-8">
-          <div className="flex justify-between items-center mb-3">
-            <span className="text-slate-700 font-medium">
-              {locale === "ko" ? "무료 견적서" : "Free Quotes"}
-            </span>
-            <span className="text-sm text-slate-500">
-              {usageCount}/{FREE_QUOTA_LIMIT} {locale === "ko" ? "사용됨" : "used"}
-            </span>
+        {/* Usage Progress - Only show for Free Plan */}
+        {!isPro && (
+          <div className="p-6 rounded-2xl bg-white border border-slate-200 shadow-sm mb-8">
+            <div className="flex justify-between items-center mb-3">
+              <span className="text-slate-700 font-medium">
+                {locale === "ko" ? "무료 견적서" : "Free Quotes"}
+              </span>
+              <span className="text-sm text-slate-500">
+                {usageCount}/{FREE_QUOTA_LIMIT} {locale === "ko" ? "사용됨" : "used"}
+              </span>
+            </div>
+            <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  usagePercentage >= 100
+                    ? "bg-red-500"
+                    : usagePercentage >= 80
+                    ? "bg-yellow-500"
+                    : "bg-blue-600"
+                }`}
+                style={{ width: `${usagePercentage}%` }}
+              />
+            </div>
+            {usageCount >= FREE_QUOTA_LIMIT && (
+              <Link
+                href={`/${locale}/upgrade`}
+                className="inline-block mt-4 text-blue-700 hover:text-blue-900 text-sm font-medium"
+              >
+                {locale === "ko" ? "Pro로 업그레이드하기 →" : "Upgrade to Pro →"}
+              </Link>
+            )}
           </div>
-          <div className="w-full h-3 bg-slate-200 rounded-full overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all ${
-                usagePercentage >= 100
-                  ? "bg-red-500"
-                  : usagePercentage >= 80
-                  ? "bg-yellow-500"
-                  : "bg-blue-600"
-              }`}
-              style={{ width: `${usagePercentage}%` }}
-            />
-          </div>
-          {usageCount >= FREE_QUOTA_LIMIT && (
-            <Link
-              href={`/${locale}/upgrade`}
-              className="inline-block mt-4 text-blue-700 hover:text-blue-900 text-sm font-medium"
-            >
-              {locale === "ko" ? "Pro로 업그레이드하기 →" : "Upgrade to Pro →"}
-            </Link>
-          )}
-        </div>
+        )}
 
         {/* Recent Quotes */}
         <h2 className="text-xl font-semibold mb-4">

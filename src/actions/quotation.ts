@@ -183,6 +183,7 @@ export async function getUserQuotations() {
       })),
       usageCount: user.usageCount,
       subscriptionStatus: user.subscriptionStatus,
+      subscriptionEndDate: user.subscriptionEndDate?.toISOString(),
     };
   } catch (error) {
     console.error("Error fetching user quotations:", error);
