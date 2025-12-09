@@ -1,4 +1,5 @@
 import { getQuotation } from "@/actions/quotation";
+import BookingRequestModal from "@/components/booking-request-modal";
 import ShareButtons from "@/components/share-buttons";
 import { APP_URL } from "@/lib/constants";
 import { formatCurrency, formatDate, getFlagFromPort } from "@/lib/utils";
@@ -200,6 +201,18 @@ export default async function QuoteViewPage({ params }: PageProps) {
 
             {/* Divider */}
             <div className="border-t border-slate-200 my-6" />
+
+            {/* Booking Request Section */}
+            <div className="mb-6">
+              <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3 text-center">
+                {isKo ? "부킹 요청" : "Request Booking"}
+              </div>
+              <BookingRequestModal
+                quoteId={shortId}
+                route={`${polName} → ${podName}`}
+                locale={locale}
+              />
+            </div>
 
             {/* Share Section */}
             <div>
