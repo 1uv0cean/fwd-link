@@ -79,7 +79,7 @@ export default async function SignInPage({
             action={async (formData: FormData) => {
               "use server";
               const email = formData.get("email") as string;
-              await signIn("resend", { email, redirectTo: `/${locale}/dashboard` });
+              await signIn("nodemailer", { email, redirectTo: `/${locale}/dashboard` });
             }}
             className="space-y-3"
           >
