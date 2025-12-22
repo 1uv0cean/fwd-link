@@ -226,3 +226,162 @@ export async function getUserQuotations(params?: {
     return { success: false, error: "Failed to fetch quotations" };
   }
 }
+
+// ============================================
+// UPDATE QUOTATION
+// ============================================
+interface UpdateQuotationInput {
+  shortId: string;
+  pol?: IPort;
+  pod?: IPort;
+  containerType?: ContainerType;
+  incoterms?: Incoterms;
+  transportMode?: TransportMode;
+  lineItems?: IQuoteLineItem[];
+  price?: number;
+  remarks?: string;
+  validUntil?: Date;
+}
+
+export async function updateQuotation(
+  input: UpdateQuotationInput
+): Promise<QuotationResult> {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.email) {
+      return {
+        success: false,
+        error: "Unauthorized",
+        errorCode: ERROR_CODES.UNAUTHORIZED,
+      };
+    }
+
+    await dbConnect();
+
+    const user = await User.findOne({ email: session.user.email });
+
+    if (!user) {
+      return {
+        success: false,
+        error: "User not found",
+        errorCode: ERROR_CODES.UNAUTHORIZED,
+      };
+    }
+
+    // Find quotation and verify ownership
+    const quotation = await Quotation.findOne({ shortId: input.shortId });
+
+    if (!quotation) {
+      return {
+        success: false,
+        error: "Quotation not found",
+      };
+    }
+
+    if (quotation.owner.toString() !== user._id.toString()) {
+      return {
+        success: false,
+        error: "You don't have permission to edit this quotation",
+        errorCode: ERROR_CODES.UNAUTHORIZED,
+      };
+    }
+
+    // Update fields if provided
+    if (input.pol) {
+      quotation.pol = {
+        name: input.pol.name.toUpperCase().trim(),
+        code: input.pol.code?.toUpperCase().trim() || null,
+        country: input.pol.country?.toUpperCase().trim() || "",
+      };
+    }
+    if (input.pod) {
+      quotation.pod = {
+        name: input.pod.name.toUpperCase().trim(),
+        code: input.pod.code?.toUpperCase().trim() || null,
+        country: input.pod.country?.toUpperCase().trim() || "",
+      };
+    }
+    if (input.containerType) quotation.containerType = input.containerType;
+    if (input.incoterms) quotation.incoterms = input.incoterms;
+    if (input.transportMode) quotation.transportMode = input.transportMode;
+    if (input.lineItems) quotation.lineItems = input.lineItems;
+    if (input.price !== undefined) quotation.price = input.price;
+    if (input.remarks !== undefined) quotation.remarks = input.remarks?.trim() || "";
+    if (input.validUntil) quotation.validUntil = new Date(input.validUntil);
+
+    await quotation.save();
+
+    return {
+      success: true,
+      shortId: quotation.shortId,
+    };
+  } catch (error) {
+    console.error("Error updating quotation:", error);
+    return {
+      success: false,
+      error: "Failed to update quotation",
+    };
+  }
+}
+
+// ============================================
+// DELETE QUOTATION
+// ============================================
+export async function deleteQuotation(
+  shortId: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const session = await auth();
+
+    if (!session?.user?.email) {
+      return {
+        success: false,
+        error: "Unauthorized",
+      };
+    }
+
+    await dbConnect();
+
+    const user = await User.findOne({ email: session.user.email });
+
+    if (!user) {
+      return {
+        success: false,
+        error: "User not found",
+      };
+    }
+
+    // Find quotation and verify ownership
+    const quotation = await Quotation.findOne({ shortId });
+
+    if (!quotation) {
+      return {
+        success: false,
+        error: "Quotation not found",
+      };
+    }
+
+    if (quotation.owner.toString() !== user._id.toString()) {
+      return {
+        success: false,
+        error: "You don't have permission to delete this quotation",
+      };
+    }
+
+    await Quotation.deleteOne({ shortId });
+
+    // Optionally decrement usage count (keep it simple - don't decrement)
+    // This prevents gaming the system by deleting and recreating
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    console.error("Error deleting quotation:", error);
+    return {
+      success: false,
+      error: "Failed to delete quotation",
+    };
+  }
+}

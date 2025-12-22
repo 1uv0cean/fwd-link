@@ -2,7 +2,7 @@ import { getUserQuotations } from "@/actions/quotation";
 import { auth, signOut } from "@/lib/auth";
 import { FREE_QUOTA_LIMIT } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Copy, ExternalLink, Eye, Plus } from "lucide-react";
+import { Copy, ExternalLink, Eye, Pencil, Plus } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -182,6 +182,14 @@ export default async function DashboardPage({
                       {quote.views} {locale === "ko" ? "회 조회" : "views"}
                     </div>
                     <div className="flex items-center gap-3">
+                      <Link
+                        href={`/${locale}/quote/${quote.shortId}/edit`}
+                        className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-blue-700 font-medium transition-colors"
+                        title={locale === "ko" ? "수정하기" : "Edit"}
+                      >
+                        <Pencil className="w-4 h-4" />
+                        {locale === "ko" ? "수정" : "Edit"}
+                      </Link>
                       <Link
                         href={`/${locale}/quote/new?duplicate=${quote.shortId}`}
                         className="inline-flex items-center gap-1 text-sm text-slate-600 hover:text-blue-700 font-medium transition-colors"

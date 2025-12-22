@@ -7,6 +7,7 @@ import { getMessages, setRequestLocale } from "next-intl/server";
 import { Inter, Noto_Sans_KR } from "next/font/google";
 import { notFound } from "next/navigation";
 import Script from "next/script";
+import { Toaster } from "sonner";
 
 const GA_TRACKING_ID = "G-CR2B1D3MXG";
 
@@ -113,6 +114,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider messages={messages}>
           {children}
         </NextIntlClientProvider>
+        <Toaster richColors position="top-center" />
       </body>
     </html>
   );

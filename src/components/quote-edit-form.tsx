@@ -1,6 +1,6 @@
 "use client";
 
-import { createQuotation } from "@/actions/quotation";
+import { deleteQuotation, updateQuotation } from "@/actions/quotation";
 import ContainerTypeSelector, {
     type ContainerType,
 } from "@/components/container-type-selector";
@@ -14,10 +14,10 @@ import {
     DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { ERROR_CODES } from "@/lib/constants";
 import type { Currency, Incoterms, IQuoteLineItem, TransportMode } from "@/types/quotation";
 import { INCOTERMS_OPTIONS, PRESET_COST_ITEMS, TRANSPORT_MODE_OPTIONS } from "@/types/quotation";
 import {
+    AlertTriangle,
     Box,
     Calendar,
     ChevronDown,
@@ -25,42 +25,68 @@ import {
     FileText,
     Loader2,
     Plus,
+    Save,
     Ship,
     Trash2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 
-export interface QuoteFormInitialData {
-  pol?: Port | null;
-  pod?: Port | null;
-  containerType?: ContainerType;
-  price?: number;
-  remarks?: string;
+interface QuotationData {
+  shortId: string;
+  pol: { name: string; code: string | null; country: string } | string;
+  pod: { name: string; code: string | null; country: string } | string;
+  containerType: string;
+  incoterms: string;
+  transportMode: string;
+  lineItems: IQuoteLineItem[];
+  price: number;
+  remarks: string;
+  validUntil: string;
 }
 
-interface QuoteFormProps {
+interface QuoteEditFormProps {
   locale: string;
-  initialData?: QuoteFormInitialData;
+  quotation: QuotationData;
 }
 
-export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
+export default function QuoteEditForm({ locale, quotation }: QuoteEditFormProps) {
+  const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const [pol, setPol] = useState<Port | null>(initialData?.pol || null);
-  const [pod, setPod] = useState<Port | null>(initialData?.pod || null);
-  const [containerType, setContainerType] = useState<ContainerType>(initialData?.containerType || "40HQ");
-  const [incoterms, setIncoterms] = useState<Incoterms>("FOB");
-  const [transportMode, setTransportMode] = useState<TransportMode>("FCL");
-  const [validUntil, setValidUntil] = useState("");
-  const [remarks, setRemarks] = useState(initialData?.remarks || "");
+  // Parse pol/pod
+  const polData = typeof quotation.pol === "object" ? quotation.pol : null;
+  const podData = typeof quotation.pod === "object" ? quotation.pod : null;
 
-  // Dynamic line items
-  const [lineItems, setLineItems] = useState<IQuoteLineItem[]>([
-    { name: "OF", amount: 0, currency: "USD" },
-  ]);
+  const initialPol: Port | null = polData
+    ? { name: polData.name, code: polData.code || "", country: polData.country || "", flag: "🚢" }
+    : null;
+  const initialPod: Port | null = podData
+    ? { name: podData.name, code: podData.code || "", country: podData.country || "", flag: "🚢" }
+    : null;
+
+  const [pol, setPol] = useState<Port | null>(initialPol);
+  const [pod, setPod] = useState<Port | null>(initialPod);
+  const [containerType, setContainerType] = useState<ContainerType>(
+    (quotation.containerType || "40HQ") as ContainerType
+  );
+  const [incoterms, setIncoterms] = useState<Incoterms>(
+    (quotation.incoterms || "FOB") as Incoterms
+  );
+  const [transportMode, setTransportMode] = useState<TransportMode>(
+    (quotation.transportMode || "FCL") as TransportMode
+  );
+  const [validUntil, setValidUntil] = useState(quotation.validUntil.split("T")[0]);
+  const [remarks, setRemarks] = useState(quotation.remarks || "");
+  const [lineItems, setLineItems] = useState<IQuoteLineItem[]>(
+    quotation.lineItems?.length > 0
+      ? quotation.lineItems
+      : [{ name: "OF", amount: quotation.price, currency: "USD" }]
+  );
 
   const isKo = locale === "ko";
 
@@ -103,7 +129,6 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
       return;
     }
 
-    // Validate line items
     const validLineItems = lineItems.filter((item) => item.name && item.amount > 0);
     if (validLineItems.length === 0) {
       setError(isKo ? "최소 하나의 비용 항목을 입력해주세요" : "Please add at least one cost item");
@@ -112,43 +137,33 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
     }
 
     try {
-      const result = await createQuotation({
-        pol: {
-          name: pol.name,
-          code: pol.code || null,
-          country: pol.country || "",
-        },
-        pod: {
-          name: pod.name,
-          code: pod.code || null,
-          country: pod.country || "",
-        },
+      const result = await updateQuotation({
+        shortId: quotation.shortId,
+        pol: { name: pol.name, code: pol.code || null, country: pol.country || "" },
+        pod: { name: pod.name, code: pod.code || null, country: pod.country || "" },
         containerType,
         incoterms,
         transportMode,
         lineItems: validLineItems,
-        price: totalUSD, // Use USD total as main price
+        price: totalUSD,
         remarks,
-        validUntil: new Date(validUntil || defaultDateStr),
+        validUntil: new Date(validUntil),
       });
 
       if (!result.success) {
-        if (result.errorCode === ERROR_CODES.LIMIT_REACHED) {
-          setShowUpgradeModal(true);
-        } else {
-          toast.error(isKo ? "생성 실패" : "Creation Failed", {
-            description: result.error || "Failed to create quote",
-          });
-        }
+        toast.error(isKo ? "저장 실패" : "Save Failed", {
+          description: result.error || "Failed to update quote",
+        });
         return;
       }
 
-      toast.success(isKo ? "견적서 생성 완료!" : "Quote Created!", {
-        description: isKo ? "새 탭에서 견적서를 확인하세요" : "Check the quote in the new tab",
+      toast.success(isKo ? "저장 완료!" : "Saved!", {
+        description: isKo ? "견적서가 업데이트되었습니다" : "Quote has been updated",
       });
 
-      // Open the created quote in a new tab
-      window.open(`/${locale}/quote/${result.shortId}`, '_blank');
+      // Navigate to the quote view page
+      router.push(`/${locale}/quote/${quotation.shortId}`);
+      router.refresh();
     } catch {
       setError("An unexpected error occurred");
     } finally {
@@ -156,9 +171,35 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
     }
   };
 
-  const defaultDate = new Date();
-  defaultDate.setDate(defaultDate.getDate() + 7);
-  const defaultDateStr = defaultDate.toISOString().split("T")[0];
+  const handleDelete = async () => {
+    setIsDeleting(true);
+
+    try {
+      const result = await deleteQuotation(quotation.shortId);
+
+      if (!result.success) {
+        toast.error(isKo ? "삭제 실패" : "Delete Failed", {
+          description: result.error || "Failed to delete quote",
+        });
+        setShowDeleteModal(false);
+        setIsDeleting(false);
+        return;
+      }
+
+      toast.success(isKo ? "삭제 완료!" : "Deleted!", {
+        description: isKo ? "견적서가 삭제되었습니다" : "Quote has been deleted",
+      });
+
+      // Navigate to dashboard using window.location for reliable redirect
+      setTimeout(() => {
+        window.location.href = `/${locale}/dashboard`;
+      }, 500);
+    } catch {
+      setError("An unexpected error occurred");
+      setShowDeleteModal(false);
+      setIsDeleting(false);
+    }
+  };
 
   return (
     <>
@@ -194,7 +235,6 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
 
         {/* Transport Mode & Incoterms Row */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Transport Mode */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
               <Box className="w-4 h-4" />
@@ -218,7 +258,6 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
             </div>
           </div>
 
-          {/* Incoterms */}
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
               <FileText className="w-4 h-4" />
@@ -254,11 +293,10 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
             <DollarSign className="w-4 h-4" />
             {isKo ? "비용 항목" : "Cost Items"}
           </label>
-          
+
           <div className="space-y-2">
             {lineItems.map((item, index) => (
               <div key={index} className="flex gap-2 items-center">
-                {/* Item Name - Combobox with presets */}
                 <div className="relative flex-1">
                   <input
                     type="text"
@@ -275,7 +313,6 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
                   </datalist>
                 </div>
 
-                {/* Amount */}
                 <Input
                   type="number"
                   value={item.amount || ""}
@@ -286,7 +323,6 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
                   className="w-28 bg-white border-slate-300 text-slate-800 text-sm"
                 />
 
-                {/* Currency */}
                 <select
                   value={item.currency}
                   onChange={(e) => updateLineItem(index, "currency", e.target.value)}
@@ -296,7 +332,6 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
                   <option value="KRW">KRW</option>
                 </select>
 
-                {/* Remove Button */}
                 <button
                   type="button"
                   onClick={() => removeLineItem(index)}
@@ -309,7 +344,6 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
             ))}
           </div>
 
-          {/* Add Item Button */}
           <Button
             type="button"
             variant="outline"
@@ -320,7 +354,6 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
             {isKo ? "항목 추가" : "Add Item"}
           </Button>
 
-          {/* Totals Summary */}
           <div className="mt-4 p-4 rounded-lg bg-slate-100 border border-slate-200">
             <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
               {isKo ? "합계" : "Total"}
@@ -355,7 +388,7 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
           </label>
           <Input
             type="date"
-            value={validUntil || defaultDateStr}
+            value={validUntil}
             onChange={(e) => setValidUntil(e.target.value)}
             required
             className="bg-white border-slate-300 text-slate-800"
@@ -386,50 +419,77 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
           </div>
         )}
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          disabled={isLoading}
-          className="w-full h-14 text-lg font-semibold bg-blue-900 hover:bg-blue-800 shadow-md"
-        >
-          {isLoading ? (
-            <>
-              <Loader2 className="w-5 h-5 animate-spin mr-2" />
-              {isKo ? "생성 중..." : "Creating..."}
-            </>
-          ) : (
-            isKo ? "견적서 작성" : "Create Quote"
-          )}
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex gap-3">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowDeleteModal(true)}
+            className="border-red-300 text-red-600 hover:bg-red-50"
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            {isKo ? "삭제" : "Delete"}
+          </Button>
+
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="flex-1 h-12 text-lg font-semibold bg-blue-900 hover:bg-blue-800 shadow-md"
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                {isKo ? "저장 중..." : "Saving..."}
+              </>
+            ) : (
+              <>
+                <Save className="w-5 h-5 mr-2" />
+                {isKo ? "저장" : "Save Changes"}
+              </>
+            )}
+          </Button>
+        </div>
       </form>
 
-      {/* Upgrade Modal */}
-      <Dialog open={showUpgradeModal} onOpenChange={setShowUpgradeModal}>
+      {/* Delete Confirmation Modal */}
+      <Dialog open={showDeleteModal} onOpenChange={setShowDeleteModal}>
         <DialogContent className="bg-white border-slate-200">
           <DialogHeader>
-            <DialogTitle>
-              {isKo
-                ? "무료 견적서를 모두 사용하셨습니다"
-                : "You've used all free quotes"}
+            <DialogTitle className="flex items-center gap-2 text-red-600">
+              <AlertTriangle className="w-5 h-5" />
+              {isKo ? "견적서 삭제" : "Delete Quote"}
             </DialogTitle>
             <DialogDescription className="text-slate-600">
               {isKo
-                ? "Pro로 업그레이드하여 무제한 견적서를 작성하세요."
-                : "Upgrade to Pro for unlimited quotes."}
+                ? "이 견적서를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+                : "Are you sure you want to delete this quote? This action cannot be undone."}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-3 mt-4">
-            <Button asChild className="w-full bg-blue-900 hover:bg-blue-800">
-              <a href={`/${locale}/upgrade`}>
-                {isKo ? "Pro로 업그레이드" : "Upgrade to Pro"}
-              </a>
-            </Button>
+          <div className="flex gap-3 mt-4">
             <Button
               variant="outline"
-              className="w-full border-slate-300 text-slate-700 hover:bg-slate-100"
-              onClick={() => setShowUpgradeModal(false)}
+              className="flex-1"
+              onClick={() => setShowDeleteModal(false)}
             >
-              {isKo ? "나중에" : "Maybe later"}
+              {isKo ? "취소" : "Cancel"}
+            </Button>
+            <Button
+              variant="destructive"
+              className="flex-1 bg-red-600 hover:bg-red-700"
+              onClick={handleDelete}
+              disabled={isDeleting}
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  {isKo ? "삭제 중..." : "Deleting..."}
+                </>
+              ) : (
+                <>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  {isKo ? "삭제" : "Delete"}
+                </>
+              )}
             </Button>
           </div>
         </DialogContent>
