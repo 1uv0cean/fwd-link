@@ -68,6 +68,16 @@ function formatAmount(amount: number, currency: Currency) {
   return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 }
 
+// Helper to adjust color brightness for gradient
+function adjustColor(hex: string, percent: number): string {
+  const num = parseInt(hex.replace("#", ""), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = Math.min(255, (num >> 16) + amt);
+  const G = Math.min(255, ((num >> 8) & 0x00ff) + amt);
+  const B = Math.min(255, (num & 0x0000ff) + amt);
+  return `#${((1 << 24) | (R << 16) | (G << 8) | B).toString(16).slice(1)}`;
+}
+
 export default async function QuoteViewPage({ params }: PageProps) {
   const { locale, shortId } = await params;
   setRequestLocale(locale);
@@ -78,7 +88,7 @@ export default async function QuoteViewPage({ params }: PageProps) {
     notFound();
   }
 
-  const { quotation } = result;
+  const { quotation, ownerBranding } = result;
   const polName = typeof quotation.pol === 'object' ? quotation.pol.name : quotation.pol;
   const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
   const polCode = typeof quotation.pol === 'object' ? quotation.pol.code : null;
@@ -103,20 +113,37 @@ export default async function QuoteViewPage({ params }: PageProps) {
 
   const isKo = locale === "ko";
 
+  // Branding colors
+  const brandColor = ownerBranding?.primaryColor || "#1e3a8a";
+  const brandColorLight = adjustColor(brandColor, 15);
+  const displayName = ownerBranding?.companyName || "FwdLink";
+
   return (
     <main className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-50 to-slate-100">
       <div className="w-full max-w-lg">
         {/* Quote Card */}
         <div className="bg-white rounded-2xl shadow-2xl shadow-slate-200/50 border border-slate-200/80 overflow-hidden">
           
-          {/* Header */}
-          <div className="bg-gradient-to-r from-blue-900 to-blue-800 px-6 py-5">
+          {/* Header - Custom Branding */}
+          <div
+            className="px-6 py-5"
+            style={{ background: `linear-gradient(to right, ${brandColor}, ${brandColorLight})` }}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Ship className="w-5 h-5 text-blue-200" />
-                <span className="text-white font-semibold tracking-tight">FwdLink</span>
+                {ownerBranding?.logoBase64 ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={ownerBranding.logoBase64}
+                    alt={displayName}
+                    className="w-7 h-7 object-contain bg-white rounded p-0.5"
+                  />
+                ) : (
+                  <Ship className="w-5 h-5 text-white/80" />
+                )}
+                <span className="text-white font-semibold tracking-tight">{displayName}</span>
               </div>
-              <span className="text-blue-200 text-sm font-medium">
+              <span className="text-white/80 text-sm font-medium">
                 {isKo ? "해상운임 견적서" : "Ocean Freight Quotation"}
               </span>
             </div>

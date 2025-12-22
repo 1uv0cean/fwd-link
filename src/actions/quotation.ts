@@ -140,6 +140,12 @@ export async function getQuotation(
       });
     }
 
+    // Fetch owner's branding info (for Pro users)
+    const owner = await User.findById(quotation.owner).lean();
+    const ownerBranding = owner?.subscriptionStatus === SUBSCRIPTION_STATUS.ACTIVE
+      ? owner.branding
+      : undefined;
+
     return {
       success: true,
       quotation: {
@@ -155,6 +161,14 @@ export async function getQuotation(
         validUntil: quotation.validUntil.toISOString(),
         views: quotation.views + (options.incrementView ? 1 : 0),
       },
+      // Include owner branding for display on quote page
+      ownerBranding: ownerBranding ? {
+        companyName: ownerBranding.companyName,
+        logoBase64: ownerBranding.logoBase64,
+        primaryColor: ownerBranding.primaryColor,
+        contactEmail: ownerBranding.contactEmail,
+        contactPhone: ownerBranding.contactPhone,
+      } : undefined,
     };
   } catch (error) {
     console.error("Error fetching quotation:", error);

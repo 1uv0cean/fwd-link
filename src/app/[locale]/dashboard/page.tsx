@@ -2,7 +2,7 @@ import { getUserQuotations } from "@/actions/quotation";
 import { auth, signOut } from "@/lib/auth";
 import { FREE_QUOTA_LIMIT } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Copy, ExternalLink, Eye, Package, Pencil, Plus } from "lucide-react";
+import { Copy, ExternalLink, Eye, Package, Palette, Pencil, Plus } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -74,13 +74,20 @@ export default async function DashboardPage({
             </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
             <Link
               href={`/${locale}/bookings`}
-              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-green-600 text-green-600 font-medium hover:bg-green-50 transition-colors"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-green-600 text-green-600 font-medium hover:bg-green-50 transition-colors text-sm sm:text-base"
             >
-              <Package className="w-5 h-5" />
-              {locale === "ko" ? "부킹 요청" : "Bookings"}
+              <Package className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">{locale === "ko" ? "부킹 요청" : "Bookings"}</span>
+            </Link>
+            <Link
+              href={`/${locale}/settings/branding`}
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-purple-600 text-purple-600 font-medium hover:bg-purple-50 transition-colors text-sm sm:text-base"
+            >
+              <Palette className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">{locale === "ko" ? "브랜딩" : "Branding"}</span>
             </Link>
             <form
               action={async () => {
@@ -90,17 +97,19 @@ export default async function DashboardPage({
             >
               <button
                 type="submit"
-                className="px-4 py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:bg-slate-100 transition-colors"
+                className="px-3 sm:px-4 py-2 sm:py-3 rounded-xl border border-slate-300 text-slate-600 font-medium hover:bg-slate-100 transition-colors text-sm sm:text-base"
               >
-                {locale === "ko" ? "로그아웃" : "Sign Out"}
+                <span className="hidden sm:inline">{locale === "ko" ? "로그아웃" : "Sign Out"}</span>
+                <span className="sm:hidden">{locale === "ko" ? "로그아웃" : "Out"}</span>
               </button>
             </form>
             <Link
               href={`/${locale}/quote/new`}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-colors shadow-md"
+              className="inline-flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 rounded-xl bg-blue-900 text-white font-semibold hover:bg-blue-800 transition-colors shadow-md text-sm sm:text-base"
             >
-              <Plus className="w-5 h-5" />
-              {locale === "ko" ? "견적서 작성" : "Create Quote"}
+              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="hidden sm:inline">{locale === "ko" ? "견적서 작성" : "Create Quote"}</span>
+              <span className="sm:hidden">{locale === "ko" ? "작성" : "New"}</span>
             </Link>
           </div>
         </div>
