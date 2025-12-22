@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: "FwdLink - Professional Freight Quotes",
     short_name: "FwdLink",
     description:
-      "Stop using Excel. Send professional freight quotes via WhatsApp link in 10 seconds.",
+      "Stop using Excel. Send professional freight quotes via WhatsApp/Email link in 30 seconds.",
     start_url: "/",
     display: "standalone",
     background_color: "#f8fafc",

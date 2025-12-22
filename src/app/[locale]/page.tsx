@@ -240,15 +240,15 @@ function HomePageContent({ locale }: { locale: string }) {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-slate-900 tracking-tight mb-6">
               {locale === "ko" ? (
                 <>
-                  견적서를 <span className="text-blue-600">10초</span>만에
+                  견적서를 <span className="text-blue-600">30초</span>만에
                   <br className="hidden sm:block" />
-                  WhatsApp으로 전송하세요
+                  WhatsApp/Email로 전송하세요
                 </>
               ) : (
                 <>
                   Send Freight Quotes via
                   <br className="hidden sm:block" />
-                  <span className="text-blue-600">WhatsApp</span> in 10 Seconds
+                  <span className="text-blue-600">WhatsApp/Email</span> in 30 Seconds
                 </>
               )}
             </h1>

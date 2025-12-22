@@ -36,12 +36,12 @@ export async function generateMetadata({
   const isKorean = locale === "ko";
 
   const title = isKorean
-    ? "FwdLink - 10초 만에 전문 운임 견적서"
-    : "FwdLink - Professional Freight Quotes in 10 Seconds";
+    ? "FwdLink - 30초 완성 전문 운임 견적서"
+    : "FwdLink - Professional Freight Quotes in 30 Seconds";
 
   const description = isKorean
-    ? "엑셀은 이제 그만. WhatsApp 링크로 10초 만에 전문 운임 견적서를 보내세요."
-    : "Stop using Excel. Send professional freight quotes via WhatsApp link in 10 seconds.";
+    ? "엑셀은 이제 그만. WhatsApp/Email 링크로 30초 만에 전문 운임 견적서를 보내세요."
+    : "Stop using Excel. Send professional freight quotes via WhatsApp/Email link in 30 seconds.";
 
   // Build alternate language links
   const languages: Record<string, string> = {};

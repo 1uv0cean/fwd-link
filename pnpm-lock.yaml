@@ -57,7 +57,7 @@ importers:
         specifier: ^5.0.0-beta.30
         version: 5.0.0-beta.30(next@16.1.0(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(nodemailer@7.0.11)(react@19.2.3)
       next-intl:
-        specifier: ^4.5.8
+        specifier: ^4.6.1
         version: 4.6.1(next@16.1.0(@babel/core@7.28.5)(babel-plugin-react-compiler@1.0.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(react@19.2.3)(typescript@5.9.3)
       nodemailer:
         specifier: ^7.0.11
