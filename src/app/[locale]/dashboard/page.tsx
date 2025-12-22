@@ -2,7 +2,7 @@ import { getUserQuotations } from "@/actions/quotation";
 import { auth, signOut } from "@/lib/auth";
 import { FREE_QUOTA_LIMIT } from "@/lib/constants";
 import { formatCurrency, formatDate } from "@/lib/utils";
-import { Copy, ExternalLink, Eye, Pencil, Plus } from "lucide-react";
+import { Copy, ExternalLink, Eye, Package, Pencil, Plus } from "lucide-react";
 import { setRequestLocale } from "next-intl/server";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -75,6 +75,13 @@ export default async function DashboardPage({
           </div>
 
           <div className="flex items-center gap-3">
+            <Link
+              href={`/${locale}/bookings`}
+              className="inline-flex items-center gap-2 px-4 py-3 rounded-xl border border-green-600 text-green-600 font-medium hover:bg-green-50 transition-colors"
+            >
+              <Package className="w-5 h-5" />
+              {locale === "ko" ? "부킹 요청" : "Bookings"}
+            </Link>
             <form
               action={async () => {
                 "use server";

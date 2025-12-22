@@ -2,6 +2,7 @@
 
 import { APP_NAME } from "@/lib/constants";
 import dbConnect from "@/lib/db";
+import BookingRequest from "@/models/BookingRequest";
 import Quotation from "@/models/Quotation";
 import User from "@/models/User";
 import { Resend } from "resend";
@@ -107,6 +108,27 @@ export async function sendBookingEmail(
 
     // Send email via Resend
     const fromEmail = process.env.AUTH_RESEND_FROM || `${APP_NAME} <noreply@fwdlink.io>`;
+
+    // Save booking request to database
+    const ownerId = typeof quotation.owner === "object" && "_id" in quotation.owner
+      ? quotation.owner._id
+      : quotation.owner;
+
+    await BookingRequest.create({
+      quotation: quotation._id,
+      owner: ownerId,
+      shipperCompany: input.shipperCompany,
+      shipperName: input.shipperName,
+      shipperEmail: input.shipperEmail,
+      shipperPhone: input.shipperPhone,
+      readyDate: new Date(input.readyDate),
+      commodity: input.commodity,
+      volume: input.volume,
+      message: input.message || "",
+      status: "pending",
+      route,
+      quoteShortId: input.quoteId,
+    });
 
     const { error } = await resend.emails.send({
       from: fromEmail,
