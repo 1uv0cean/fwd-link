@@ -3,7 +3,13 @@
 import { auth } from "@/lib/auth";
 import { ERROR_CODES, FREE_QUOTA_LIMIT, SUBSCRIPTION_STATUS } from "@/lib/constants";
 import dbConnect from "@/lib/db";
-import Quotation, { type ContainerType, type IPort } from "@/models/Quotation";
+import Quotation, {
+    type ContainerType,
+    type Incoterms,
+    type IPort,
+    type IQuoteLineItem,
+    type TransportMode
+} from "@/models/Quotation";
 import User from "@/models/User";
 import { nanoid } from "nanoid";
 
@@ -11,6 +17,9 @@ interface CreateQuotationInput {
   pol: IPort;
   pod: IPort;
   containerType: ContainerType;
+  incoterms: Incoterms;
+  transportMode: TransportMode;
+  lineItems: IQuoteLineItem[];
   price: number;
   remarks?: string;
   validUntil: Date;
@@ -67,7 +76,7 @@ export async function createQuotation(
     // Generate a unique short ID (7 chars)
     const shortId = nanoid(7);
 
-    // Create the quotation (USD only)
+    // Create the quotation with line items
     const quotation = await Quotation.create({
       shortId,
       owner: user._id,
@@ -82,6 +91,9 @@ export async function createQuotation(
         country: input.pod.country?.toUpperCase().trim() || "",
       },
       containerType: input.containerType || "40HQ",
+      incoterms: input.incoterms || "FOB",
+      transportMode: input.transportMode || "FCL",
+      lineItems: input.lineItems || [],
       price: input.price,
       remarks: input.remarks?.trim() || "",
       validUntil: new Date(input.validUntil),
@@ -135,6 +147,9 @@ export async function getQuotation(
         pol: quotation.pol,
         pod: quotation.pod,
         containerType: quotation.containerType || "40HQ",
+        incoterms: quotation.incoterms || "FOB",
+        transportMode: quotation.transportMode || "FCL",
+        lineItems: quotation.lineItems || [],
         price: quotation.price,
         remarks: quotation.remarks || "",
         validUntil: quotation.validUntil.toISOString(),
@@ -194,6 +209,8 @@ export async function getUserQuotations(params?: {
         pol: q.pol,
         pod: q.pod,
         containerType: q.containerType || "40HQ",
+        incoterms: q.incoterms || "FOB",
+        transportMode: q.transportMode || "FCL",
         price: q.price,
         remarks: q.remarks || "",
         validUntil: q.validUntil.toISOString(),

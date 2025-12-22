@@ -3,7 +3,8 @@ import BookingRequestModal from "@/components/booking-request-modal";
 import ShareButtons from "@/components/share-buttons";
 import { APP_URL } from "@/lib/constants";
 import { formatCurrency, formatDate, getFlagFromPort } from "@/lib/utils";
-import { Anchor, Box, Calendar, Ship } from "lucide-react";
+import type { Currency, IQuoteLineItem } from "@/types/quotation";
+import { AlertCircle, Anchor, Box, Calendar, FileText, Package, Ship } from "lucide-react";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -48,6 +49,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+// Helper to calculate totals by currency
+function calculateTotals(lineItems: IQuoteLineItem[]) {
+  const totalUSD = lineItems
+    .filter((item) => item.currency === "USD")
+    .reduce((sum, item) => sum + item.amount, 0);
+  const totalKRW = lineItems
+    .filter((item) => item.currency === "KRW")
+    .reduce((sum, item) => sum + item.amount, 0);
+  return { totalUSD, totalKRW };
+}
+
+// Helper to format amount by currency
+function formatAmount(amount: number, currency: Currency) {
+  if (currency === "KRW") {
+    return `₩${amount.toLocaleString("ko-KR")}`;
+  }
+  return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
+}
+
 export default async function QuoteViewPage({ params }: PageProps) {
   const { locale, shortId } = await params;
   setRequestLocale(locale);
@@ -59,15 +79,24 @@ export default async function QuoteViewPage({ params }: PageProps) {
   }
 
   const { quotation } = result;
-  const formattedPrice = formatCurrency(quotation.price);
   const polName = typeof quotation.pol === 'object' ? quotation.pol.name : quotation.pol;
   const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
   const polCode = typeof quotation.pol === 'object' ? quotation.pol.code : null;
   const podCode = typeof quotation.pod === 'object' ? quotation.pod.code : null;
   const containerType = quotation.containerType || '40HQ';
+  const incoterms = quotation.incoterms || 'FOB';
+  const transportMode = quotation.transportMode || 'FCL';
+  const lineItems = quotation.lineItems || [];
   
   const polFlag = getFlagFromPort(quotation.pol);
   const podFlag = getFlagFromPort(quotation.pod);
+
+  // Calculate totals from line items
+  const { totalUSD, totalKRW } = calculateTotals(lineItems);
+
+  // Check if quote is expired
+  const validUntilDate = new Date(quotation.validUntil);
+  const isExpired = validUntilDate < new Date();
 
   // Generate localized share URL - always include locale prefix
   const shareUrl = `${APP_URL}/${locale}/quote/${shortId}`;
@@ -93,9 +122,37 @@ export default async function QuoteViewPage({ params }: PageProps) {
             </div>
           </div>
 
+          {/* Expired Warning Banner */}
+          {isExpired && (
+            <div className="bg-red-50 border-b border-red-100 px-6 py-3">
+              <div className="flex items-center gap-2 text-red-600">
+                <AlertCircle className="w-5 h-5" />
+                <span className="font-medium text-sm">
+                  {isKo ? "🚫 만료된 견적서입니다" : "🚫 This quote has expired"}
+                </span>
+              </div>
+            </div>
+          )}
+
           {/* Content */}
           <div className="p-6">
             
+            {/* Badges Row - Transport Mode & Incoterms */}
+            <div className="flex flex-wrap gap-2 mb-6">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-100">
+                <Package className="w-4 h-4" />
+                {transportMode}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-700 text-sm font-medium border border-emerald-100">
+                <FileText className="w-4 h-4" />
+                {incoterms}
+              </span>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 text-slate-700 text-sm font-medium border border-slate-200">
+                <Box className="w-4 h-4" />
+                {containerType}
+              </span>
+            </div>
+
             {/* Route Section */}
             <div className="mb-6">
               <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
@@ -153,19 +210,62 @@ export default async function QuoteViewPage({ params }: PageProps) {
             {/* Divider */}
             <div className="border-t border-dashed border-slate-200 my-6" />
 
-            {/* Price Section */}
-            <div className="text-center mb-6">
+            {/* Cost Breakdown Table */}
+            {lineItems.length > 0 && (
+              <div className="mb-6">
+                <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
+                  {isKo ? "비용 내역" : "Cost Breakdown"}
+                </div>
+                <div className="rounded-lg border border-slate-200 overflow-hidden">
+                  <table className="w-full">
+                    <thead className="bg-slate-50">
+                      <tr>
+                        <th className="text-left text-xs font-medium text-slate-600 px-4 py-2">
+                          {isKo ? "항목" : "Item"}
+                        </th>
+                        <th className="text-right text-xs font-medium text-slate-600 px-4 py-2">
+                          {isKo ? "금액" : "Amount"}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {lineItems.map((item: IQuoteLineItem, index: number) => (
+                        <tr key={index} className="hover:bg-slate-50">
+                          <td className="px-4 py-3 text-sm text-slate-700">{item.name}</td>
+                          <td className="px-4 py-3 text-sm text-slate-900 text-right font-medium">
+                            {formatAmount(item.amount, item.currency)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
+
+            {/* Total Section */}
+            <div className="text-center mb-6 p-4 rounded-xl bg-gradient-to-br from-blue-50 to-slate-50 border border-blue-100">
               <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
-                {isKo ? "운임" : "Freight Rate"}
+                {isKo ? "합계" : "Total"}
               </div>
-              <div className="text-4xl font-bold text-blue-900 tracking-tight">
-                {formattedPrice}
-              </div>
-              <div className="mt-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-sm font-medium border border-blue-100">
-                  <Box className="w-4 h-4" />
-                  {containerType}
-                </span>
+              <div className="flex flex-wrap justify-center gap-4">
+                {totalUSD > 0 && (
+                  <div className="text-3xl font-bold text-blue-900">
+                    ${totalUSD.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                    <span className="text-sm font-normal text-slate-500 ml-1">USD</span>
+                  </div>
+                )}
+                {totalKRW > 0 && (
+                  <div className="text-3xl font-bold text-blue-900">
+                    ₩{totalKRW.toLocaleString("ko-KR")}
+                    <span className="text-sm font-normal text-slate-500 ml-1">KRW</span>
+                  </div>
+                )}
+                {totalUSD === 0 && totalKRW === 0 && (
+                  <div className="text-3xl font-bold text-blue-900">
+                    {formatCurrency(quotation.price)}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -181,8 +281,8 @@ export default async function QuoteViewPage({ params }: PageProps) {
                     {isKo ? "견적 유효기간" : "Validity"}
                   </span>
                 </div>
-                <span className="font-semibold text-slate-900">
-                  {formatDate(new Date(quotation.validUntil), locale as "en" | "ko")}
+                <span className={`font-semibold ${isExpired ? 'text-red-600' : 'text-slate-900'}`}>
+                  {formatDate(validUntilDate, locale as "en" | "ko")}
                 </span>
               </div>
             </div>
@@ -221,7 +321,7 @@ export default async function QuoteViewPage({ params }: PageProps) {
               </div>
               <ShareButtons
                 url={shareUrl}
-                title={`${polName} → ${podName} - ${formattedPrice}`}
+                title={`${polName} → ${podName} - ${formatCurrency(quotation.price)}`}
                 locale={locale}
               />
             </div>

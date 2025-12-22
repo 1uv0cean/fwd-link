@@ -1,14 +1,23 @@
 import mongoose, { Document, Model, Schema, Types } from "mongoose";
 
-// Port structure for analytics
-export interface IPort {
-  name: string;
-  code: string | null;
-  country: string;
-}
+// Import types from shared types file (can be used in client components)
+export { PRESET_COST_ITEMS } from "@/types/quotation";
+export type {
+  ContainerType,
+  Currency,
+  Incoterms,
+  IPort,
+  IQuoteLineItem,
+  TransportMode
+} from "@/types/quotation";
 
-// Container types
-export type ContainerType = "20GP" | "40GP" | "40HQ";
+import type {
+  ContainerType,
+  Incoterms,
+  IPort,
+  IQuoteLineItem,
+  TransportMode
+} from "@/types/quotation";
 
 export interface IQuotation extends Document {
   _id: mongoose.Types.ObjectId;
@@ -17,7 +26,10 @@ export interface IQuotation extends Document {
   pol: IPort;
   pod: IPort;
   containerType: ContainerType;
-  price: number;
+  incoterms: Incoterms;
+  transportMode: TransportMode;
+  lineItems: IQuoteLineItem[];
+  price: number; // Legacy: total price for backward compatibility
   remarks?: string;
   validUntil: Date;
   views: number;
@@ -31,6 +43,16 @@ const PortSchema = new Schema<IPort>(
     name: { type: String, required: true, uppercase: true, trim: true },
     code: { type: String, default: null, uppercase: true, trim: true },
     country: { type: String, default: "", uppercase: true, trim: true },
+  },
+  { _id: false }
+);
+
+// Line Item sub-schema
+const LineItemSchema = new Schema<IQuoteLineItem>(
+  {
+    name: { type: String, required: true, trim: true },
+    amount: { type: Number, required: true, min: 0 },
+    currency: { type: String, enum: ["USD", "KRW"], default: "USD" },
   },
   { _id: false }
 );
@@ -67,7 +89,24 @@ const QuotationSchema = new Schema<IQuotation>(
       enum: ["20GP", "40GP", "40HQ"],
       default: "40HQ",
     },
-    // Quote price (USD only)
+    // Incoterms
+    incoterms: {
+      type: String,
+      enum: ["EXW", "FCA", "FOB", "CFR", "CIF", "DAP", "DDP"],
+      default: "FOB",
+    },
+    // Transport mode (Ocean freight only)
+    transportMode: {
+      type: String,
+      enum: ["FCL", "LCL"],
+      default: "FCL",
+    },
+    // Dynamic cost line items
+    lineItems: {
+      type: [LineItemSchema],
+      default: [],
+    },
+    // Total price (calculated from lineItems, kept for backward compatibility)
     price: {
       type: Number,
       required: [true, "Price is required"],
