@@ -306,58 +306,59 @@ export default async function QuoteViewPage({ params }: PageProps) {
                 {isKo ? "운송 구간" : "Route"}
               </div>
               
-              <div className="flex items-stretch gap-3">
+              {/* Stacked on mobile, horizontal on larger screens */}
+              <div className="flex flex-col sm:flex-row sm:items-stretch gap-3">
                 {/* POL */}
-                <div className="flex-1 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Anchor className="w-4 h-4 text-blue-600" />
+                <div className="flex-1 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                    <Anchor className="w-4 h-4 text-blue-600 shrink-0" />
                     <span className="text-xs font-medium text-slate-500">
                       {isKo ? "출발항" : "POL"}
                     </span>
-                  </div>
-                  <div className="flex items-center gap-2">
                     {polCountry && (
-                      <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-bold">
+                      <span className="px-1.5 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-bold">
                         {polCountry}
                       </span>
                     )}
-                    <span className="text-lg font-bold text-slate-900">{polName}</span>
                   </div>
-                  {polCode && (
-                    <span className="mt-1 inline-block px-2 py-0.5 rounded text-xs font-mono text-slate-500 bg-slate-100">
-                      {polCode}
-                    </span>
-                  )}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-base sm:text-lg font-bold text-slate-900 break-words">{polName}</span>
+                    {polCode && (
+                      <span className="px-1.5 py-0.5 rounded text-xs font-mono text-slate-500 bg-slate-100">
+                        {polCode}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
-                {/* Arrow */}
-                <div className="flex items-center">
+                {/* Arrow - horizontal on mobile, centered on desktop */}
+                <div className="flex items-center justify-center py-1 sm:py-0">
                   <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                    <span className="text-blue-700 font-bold">→</span>
+                    <span className="text-blue-700 font-bold sm:rotate-0 rotate-90">→</span>
                   </div>
                 </div>
 
                 {/* POD */}
-                <div className="flex-1 p-4 rounded-xl bg-slate-50 border border-slate-200">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Anchor className="w-4 h-4 text-green-600" />
+                <div className="flex-1 p-3 sm:p-4 rounded-xl bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2 mb-1 sm:mb-2">
+                    <Anchor className="w-4 h-4 text-green-600 shrink-0" />
                     <span className="text-xs font-medium text-slate-500">
                       {isKo ? "도착항" : "POD"}
                     </span>
-                  </div>
-                  <div className="flex items-center gap-2">
                     {podCountry && (
-                      <span className="px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-bold">
+                      <span className="px-1.5 py-0.5 rounded bg-green-100 text-green-700 text-xs font-bold">
                         {podCountry}
                       </span>
                     )}
-                    <span className="text-lg font-bold text-slate-900">{podName}</span>
                   </div>
-                  {podCode && (
-                    <span className="mt-1 inline-block px-2 py-0.5 rounded text-xs font-mono text-slate-500 bg-slate-100">
-                      {podCode}
-                    </span>
-                  )}
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-base sm:text-lg font-bold text-slate-900 break-words">{podName}</span>
+                    {podCode && (
+                      <span className="px-1.5 py-0.5 rounded text-xs font-mono text-slate-500 bg-slate-100">
+                        {podCode}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
