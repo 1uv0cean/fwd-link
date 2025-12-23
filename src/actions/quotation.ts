@@ -4,11 +4,11 @@ import { auth } from "@/lib/auth";
 import { ERROR_CODES, FREE_QUOTA_LIMIT, SUBSCRIPTION_STATUS } from "@/lib/constants";
 import dbConnect from "@/lib/db";
 import Quotation, {
-    type ContainerType,
-    type Incoterms,
-    type IPort,
-    type IQuoteLineItem,
-    type TransportMode
+  type ContainerType,
+  type Incoterms,
+  type IPort,
+  type IQuoteLineItem,
+  type TransportMode
 } from "@/models/Quotation";
 import User from "@/models/User";
 import { nanoid } from "nanoid";
@@ -106,7 +106,7 @@ export async function createQuotation(
       grossWeight: input.grossWeight || null,
       cbm: input.cbm || null,
       chargeableWeight: input.chargeableWeight || null,
-    });
+    } as any);
 
     // ============================================
     // ATOMIC INCREMENT - Prevent race conditions
@@ -117,7 +117,7 @@ export async function createQuotation(
 
     return {
       success: true,
-      shortId: quotation.shortId,
+      shortId: (quotation as any).shortId,
     };
   } catch (error) {
     console.error("Error creating quotation:", error);
@@ -340,9 +340,9 @@ export async function updateQuotation(
     if (input.remarks !== undefined) quotation.remarks = input.remarks?.trim() || "";
     if (input.validUntil) quotation.validUntil = new Date(input.validUntil);
     // AIR freight fields
-    if (input.grossWeight !== undefined) quotation.grossWeight = input.grossWeight || null;
-    if (input.cbm !== undefined) quotation.cbm = input.cbm || null;
-    if (input.chargeableWeight !== undefined) quotation.chargeableWeight = input.chargeableWeight || null;
+    if (input.grossWeight !== undefined) quotation.grossWeight = input.grossWeight || undefined;
+    if (input.cbm !== undefined) quotation.cbm = input.cbm || undefined;
+    if (input.chargeableWeight !== undefined) quotation.chargeableWeight = input.chargeableWeight || undefined;
 
     await quotation.save();
 
