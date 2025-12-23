@@ -23,6 +23,10 @@ interface CreateQuotationInput {
   price: number;
   remarks?: string;
   validUntil: Date;
+  // AIR freight fields
+  grossWeight?: number;
+  cbm?: number;
+  chargeableWeight?: number;
 }
 
 interface QuotationResult {
@@ -98,6 +102,10 @@ export async function createQuotation(
       remarks: input.remarks?.trim() || "",
       validUntil: new Date(input.validUntil),
       views: 0,
+      // AIR freight fields
+      grossWeight: input.grossWeight || null,
+      cbm: input.cbm || null,
+      chargeableWeight: input.chargeableWeight || null,
     });
 
     // ============================================
@@ -160,6 +168,10 @@ export async function getQuotation(
         remarks: quotation.remarks || "",
         validUntil: quotation.validUntil.toISOString(),
         views: quotation.views + (options.incrementView ? 1 : 0),
+        // AIR freight fields
+        grossWeight: quotation.grossWeight || null,
+        cbm: quotation.cbm || null,
+        chargeableWeight: quotation.chargeableWeight || null,
       },
       // Include owner branding for display on quote page
       ownerBranding: ownerBranding ? {
@@ -255,6 +267,10 @@ interface UpdateQuotationInput {
   price?: number;
   remarks?: string;
   validUntil?: Date;
+  // AIR freight fields
+  grossWeight?: number;
+  cbm?: number;
+  chargeableWeight?: number;
 }
 
 export async function updateQuotation(
@@ -323,6 +339,10 @@ export async function updateQuotation(
     if (input.price !== undefined) quotation.price = input.price;
     if (input.remarks !== undefined) quotation.remarks = input.remarks?.trim() || "";
     if (input.validUntil) quotation.validUntil = new Date(input.validUntil);
+    // AIR freight fields
+    if (input.grossWeight !== undefined) quotation.grossWeight = input.grossWeight || null;
+    if (input.cbm !== undefined) quotation.cbm = input.cbm || null;
+    if (input.chargeableWeight !== undefined) quotation.chargeableWeight = input.chargeableWeight || null;
 
     await quotation.save();
 

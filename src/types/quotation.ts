@@ -89,3 +89,47 @@ export const SECTION_INFO: Record<Section, { label: string; labelKo: string; col
   FREIGHT: { label: "Main Freight", labelKo: "운임", color: "emerald" },
   DESTINATION: { label: "Destination Charges", labelKo: "도착지 비용", color: "orange" },
 };
+
+// AIR freight specific types
+export interface IAirFreightDetails {
+  grossWeight?: number;  // Actual weight in kg
+  cbm?: number;          // Volume in CBM (cubic meters)
+  chargeableWeight?: number; // C.W in kg (auto-calculated)
+}
+
+// C.W calculation constant: 1 CBM = 167 kg (IATA standard)
+export const CBM_TO_KG_FACTOR = 167;
+
+// Calculate Chargeable Weight
+export function calculateChargeableWeight(grossWeight: number, cbm: number): number {
+  const volumetricWeight = cbm * CBM_TO_KG_FACTOR;
+  return Math.max(grossWeight, volumetricWeight);
+}
+
+// AIR freight specific preset cost items by section
+export const AIR_PRESET_COST_ITEMS_BY_SECTION: Record<Section, string[]> = {
+  ORIGIN: [
+    "Trucking (Origin)",
+    "THC (Origin)",
+    "Handling (Origin)",
+    "X-Ray Fee",
+    "AWB Fee",
+    "Customs (Origin)",
+  ],
+  FREIGHT: [
+    "Air Freight",
+    "FSC (Fuel Surcharge)",
+    "SCC (Security Charge)",
+    "SSC",
+    "AWC",
+  ],
+  DESTINATION: [
+    "THC (Destination)",
+    "Handling (Destination)",
+    "D/O Fee",
+    "Customs (Destination)",
+    "Trucking (Destination)",
+    "Storage",
+  ],
+};
+

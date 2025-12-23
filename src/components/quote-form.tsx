@@ -1,6 +1,7 @@
 "use client";
 
 import { createQuotation } from "@/actions/quotation";
+import AirportCombobox, { type Airport } from "@/components/airport-combobox";
 import ContainerTypeSelector, {
     type ContainerType,
 } from "@/components/container-type-selector";
@@ -16,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { ERROR_CODES } from "@/lib/constants";
 import type { Currency, Incoterms, IQuoteLineItem, Section, TransportMode } from "@/types/quotation";
-import { INCOTERMS_OPTIONS, PRESET_COST_ITEMS_BY_SECTION, SECTION_INFO, TRANSPORT_MODE_OPTIONS } from "@/types/quotation";
+import { AIR_PRESET_COST_ITEMS_BY_SECTION, calculateChargeableWeight, INCOTERMS_OPTIONS, PRESET_COST_ITEMS_BY_SECTION, SECTION_INFO, TRANSPORT_MODE_OPTIONS } from "@/types/quotation";
 import {
     Anchor,
     Box,
@@ -26,12 +27,14 @@ import {
     FileText,
     Loader2,
     MapPin,
+    Plane,
     Plus,
+    Scale,
     Ship,
     Trash2,
     Warehouse,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export interface QuoteFormInitialData {
@@ -63,11 +66,12 @@ interface SectionPanelProps {
   onRemove: (index: number) => void;
   onUpdate: (index: number, field: keyof IQuoteLineItem, value: string | number) => void;
   isKo: boolean;
+  isAirMode?: boolean;
 }
 
-function SectionPanel({ section, items, onAdd, onRemove, onUpdate, isKo }: SectionPanelProps) {
+function SectionPanel({ section, items, onAdd, onRemove, onUpdate, isKo, isAirMode = false }: SectionPanelProps) {
   const info = SECTION_INFO[section];
-  const presets = PRESET_COST_ITEMS_BY_SECTION[section];
+  const presets = isAirMode ? AIR_PRESET_COST_ITEMS_BY_SECTION[section] : PRESET_COST_ITEMS_BY_SECTION[section];
   
   const colorClasses = {
     blue: {
@@ -190,12 +194,49 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
   const [validUntil, setValidUntil] = useState("");
   const [remarks, setRemarks] = useState(initialData?.remarks || "");
 
+  // AIR freight fields
+  const [grossWeight, setGrossWeight] = useState<number>(0);
+  const [cbm, setCbm] = useState<number>(0);
+  const [chargeableWeight, setChargeableWeight] = useState<number>(0);
+
   // Sectioned line items
   const [originItems, setOriginItems] = useState<IQuoteLineItem[]>([]);
   const [freightItems, setFreightItems] = useState<IQuoteLineItem[]>([
     { section: "FREIGHT", name: "Ocean Freight", amount: 0, currency: "USD" },
   ]);
   const [destinationItems, setDestinationItems] = useState<IQuoteLineItem[]>([]);
+
+  const isAirMode = transportMode === "AIR";
+
+  // Update default freight item name when transport mode changes
+  useEffect(() => {
+    if (freightItems.length > 0 && freightItems[0].amount === 0) {
+      const newName = isAirMode ? "Air Freight" : "Ocean Freight";
+      if (freightItems[0].name === "Ocean Freight" || freightItems[0].name === "Air Freight") {
+        setFreightItems([
+          { ...freightItems[0], name: newName },
+          ...freightItems.slice(1),
+        ]);
+      }
+    }
+  }, [transportMode]);
+
+  // Reset pol/pod when switching between ocean (FCL/LCL) and AIR modes
+  const [prevIsAirMode, setPrevIsAirMode] = useState(isAirMode);
+  useEffect(() => {
+    if (prevIsAirMode !== isAirMode) {
+      setPol(null);
+      setPod(null);
+      setPrevIsAirMode(isAirMode);
+    }
+  }, [isAirMode, prevIsAirMode]);
+
+  // Calculate C.W when gross weight or CBM changes
+  useEffect(() => {
+    if (isAirMode && (grossWeight > 0 || cbm > 0)) {
+      setChargeableWeight(calculateChargeableWeight(grossWeight, cbm));
+    }
+  }, [grossWeight, cbm, isAirMode]);
 
   const isKo = locale === "ko";
 
@@ -284,13 +325,19 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
           code: pod.code || null,
           country: pod.country || "",
         },
-        containerType,
+        containerType: isAirMode ? "40HQ" : containerType, // Default for AIR
         incoterms,
         transportMode,
         lineItems: validLineItems,
         price: totalUSD, // Use USD total as main price
         remarks,
         validUntil: new Date(validUntil || defaultDateStr),
+        // AIR freight fields
+        ...(isAirMode && {
+          grossWeight: grossWeight || undefined,
+          cbm: cbm || undefined,
+          chargeableWeight: chargeableWeight || undefined,
+        }),
       });
 
       if (!result.success) {
@@ -328,28 +375,50 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-              <Ship className="w-4 h-4" />
-              {isKo ? "선적항 (POL)" : "Port of Loading"}
+              {isAirMode ? <Plane className="w-4 h-4" /> : <Ship className="w-4 h-4" />}
+              {isAirMode
+                ? (isKo ? "출발 공항 (AOL)" : "Airport of Loading")
+                : (isKo ? "선적항 (POL)" : "Port of Loading")}
             </label>
-            <PortCombobox
-              value={pol}
-              onChange={setPol}
-              placeholder={isKo ? "항구 검색..." : "Search port..."}
-              locale={locale}
-            />
+            {isAirMode ? (
+              <AirportCombobox
+                value={pol as Airport | null}
+                onChange={(airport) => setPol(airport as Port | null)}
+                placeholder={isKo ? "공항 검색..." : "Search airport..."}
+                locale={locale}
+              />
+            ) : (
+              <PortCombobox
+                value={pol}
+                onChange={setPol}
+                placeholder={isKo ? "항구 검색..." : "Search port..."}
+                locale={locale}
+              />
+            )}
           </div>
 
           <div className="space-y-2">
             <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
-              <Ship className="w-4 h-4" />
-              {isKo ? "도착항 (POD)" : "Port of Discharge"}
+              {isAirMode ? <Plane className="w-4 h-4" /> : <Ship className="w-4 h-4" />}
+              {isAirMode
+                ? (isKo ? "도착 공항 (AOD)" : "Airport of Discharge")
+                : (isKo ? "도착항 (POD)" : "Port of Discharge")}
             </label>
-            <PortCombobox
-              value={pod}
-              onChange={setPod}
-              placeholder={isKo ? "항구 검색..." : "Search port..."}
-              locale={locale}
-            />
+            {isAirMode ? (
+              <AirportCombobox
+                value={pod as Airport | null}
+                onChange={(airport) => setPod(airport as Port | null)}
+                placeholder={isKo ? "공항 검색..." : "Search airport..."}
+                locale={locale}
+              />
+            ) : (
+              <PortCombobox
+                value={pod}
+                onChange={setPod}
+                placeholder={isKo ? "항구 검색..." : "Search port..."}
+                locale={locale}
+              />
+            )}
           </div>
         </div>
 
@@ -402,12 +471,73 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
           </div>
         </div>
 
-        {/* Container Type Section */}
-        <ContainerTypeSelector
-          value={containerType}
-          onChange={setContainerType}
-          locale={locale}
-        />
+        {/* Container Type Section - Hidden for AIR mode */}
+        {!isAirMode && (
+          <ContainerTypeSelector
+            value={containerType}
+            onChange={setContainerType}
+            locale={locale}
+          />
+        )}
+
+        {/* AIR Freight C.W Calculator */}
+        {isAirMode && (
+          <div className="p-4 rounded-lg bg-sky-50 border border-sky-200 space-y-4">
+            <div className="flex items-center gap-2 text-sky-800 font-medium">
+              <Scale className="w-4 h-4" />
+              {isKo ? "Chargeable Weight 계산" : "Chargeable Weight Calculator"}
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <label className="text-sm text-slate-600">
+                  {isKo ? "실중량 (Gross Weight)" : "Gross Weight"}
+                </label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    value={grossWeight || ""}
+                    onChange={(e) => setGrossWeight(Number(e.target.value))}
+                    placeholder="0"
+                    min="0"
+                    step="0.1"
+                    className="bg-white border-slate-300 text-slate-800 pr-10"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">kg</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-slate-600">
+                  {isKo ? "체적 (CBM)" : "Volume (CBM)"}
+                </label>
+                <div className="relative">
+                  <Input
+                    type="number"
+                    value={cbm || ""}
+                    onChange={(e) => setCbm(Number(e.target.value))}
+                    placeholder="0"
+                    min="0"
+                    step="0.01"
+                    className="bg-white border-slate-300 text-slate-800 pr-12"
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">m³</span>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm text-slate-600">
+                  {isKo ? "C.W (청구중량)" : "Chargeable Weight"}
+                </label>
+                <div className="h-10 px-3 flex items-center rounded-md bg-sky-100 border border-sky-300 text-sky-900 font-bold">
+                  {chargeableWeight > 0 ? `${chargeableWeight.toLocaleString()} kg` : "-"}
+                </div>
+              </div>
+            </div>
+            <p className="text-xs text-slate-500">
+              {isKo
+                ? "※ C.W = max(실중량, CBM × 167) - IATA 기준"
+                : "※ C.W = max(Gross Weight, CBM × 167) - IATA standard"}
+            </p>
+          </div>
+        )}
 
         {/* Cost Sections */}
         <div className="space-y-4">
@@ -424,6 +554,7 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
             onRemove={(index) => removeItem("ORIGIN", index)}
             onUpdate={(index, field, value) => updateItem("ORIGIN", index, field, value)}
             isKo={isKo}
+            isAirMode={isAirMode}
           />
           
           {/* Freight Section */}
@@ -434,6 +565,7 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
             onRemove={(index) => removeItem("FREIGHT", index)}
             onUpdate={(index, field, value) => updateItem("FREIGHT", index, field, value)}
             isKo={isKo}
+            isAirMode={isAirMode}
           />
           
           {/* Destination Section */}
@@ -444,6 +576,7 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
             onRemove={(index) => removeItem("DESTINATION", index)}
             onUpdate={(index, field, value) => updateItem("DESTINATION", index, field, value)}
             isKo={isKo}
+            isAirMode={isAirMode}
           />
 
           {/* Totals Summary */}

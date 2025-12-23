@@ -2,7 +2,7 @@ import { getQuotation } from "@/actions/quotation";
 import BookingRequestModal from "@/components/booking-request-modal";
 import ShareButtons from "@/components/share-buttons";
 import { APP_URL } from "@/lib/constants";
-import { formatCurrency, formatDate, getFlagFromPort } from "@/lib/utils";
+import { formatCurrency, formatDate } from "@/lib/utils";
 import type { Currency, IQuoteLineItem, Section } from "@/types/quotation";
 import { SECTION_INFO } from "@/types/quotation";
 import { AlertCircle, Anchor, Box, Calendar, FileText, MapPin, Package, Ship, Warehouse } from "lucide-react";
@@ -211,13 +211,12 @@ export default async function QuoteViewPage({ params }: PageProps) {
   const podName = typeof quotation.pod === 'object' ? quotation.pod.name : quotation.pod;
   const polCode = typeof quotation.pol === 'object' ? quotation.pol.code : null;
   const podCode = typeof quotation.pod === 'object' ? quotation.pod.code : null;
+  const polCountry = typeof quotation.pol === 'object' ? quotation.pol.country : '';
+  const podCountry = typeof quotation.pod === 'object' ? quotation.pod.country : '';
   const containerType = quotation.containerType || '40HQ';
   const incoterms = quotation.incoterms || 'FOB';
   const transportMode = quotation.transportMode || 'FCL';
   const lineItems = (quotation.lineItems || []).map(normalizeLineItem);
-  
-  const polFlag = getFlagFromPort(quotation.pol);
-  const podFlag = getFlagFromPort(quotation.pod);
 
   // Group line items by section
   const groupedItems = groupBySection(lineItems);
@@ -317,7 +316,11 @@ export default async function QuoteViewPage({ params }: PageProps) {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">{polFlag}</span>
+                    {polCountry && (
+                      <span className="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-xs font-bold">
+                        {polCountry}
+                      </span>
+                    )}
                     <span className="text-lg font-bold text-slate-900">{polName}</span>
                   </div>
                   {polCode && (
@@ -343,7 +346,11 @@ export default async function QuoteViewPage({ params }: PageProps) {
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-2xl">{podFlag}</span>
+                    {podCountry && (
+                      <span className="px-2 py-0.5 rounded bg-green-100 text-green-700 text-xs font-bold">
+                        {podCountry}
+                      </span>
+                    )}
                     <span className="text-lg font-bold text-slate-900">{podName}</span>
                   </div>
                   {podCode && (

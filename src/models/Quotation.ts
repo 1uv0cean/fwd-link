@@ -3,21 +3,21 @@ import mongoose, { Document, Model, Schema, Types } from "mongoose";
 // Import types from shared types file (can be used in client components)
 export { PRESET_COST_ITEMS } from "@/types/quotation";
 export type {
-    ContainerType,
-    Currency,
-    Incoterms,
-    IPort,
-    IQuoteLineItem,
-    Section,
-    TransportMode
+  ContainerType,
+  Currency,
+  Incoterms,
+  IPort,
+  IQuoteLineItem,
+  Section,
+  TransportMode
 } from "@/types/quotation";
 
 import type {
-    ContainerType,
-    Incoterms,
-    IPort,
-    IQuoteLineItem,
-    TransportMode
+  ContainerType,
+  Incoterms,
+  IPort,
+  IQuoteLineItem,
+  TransportMode
 } from "@/types/quotation";
 
 export interface IQuotation extends Document {
@@ -33,6 +33,10 @@ export interface IQuotation extends Document {
   price: number; // Legacy: total price for backward compatibility
   remarks?: string;
   validUntil: Date;
+  // AIR freight fields
+  grossWeight?: number;
+  cbm?: number;
+  chargeableWeight?: number;
   views: number;
   createdAt: Date;
   updatedAt: Date;
@@ -130,6 +134,22 @@ const QuotationSchema = new Schema<IQuotation>(
     views: {
       type: Number,
       default: 0,
+      min: 0,
+    },
+    // AIR freight fields
+    grossWeight: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    cbm: {
+      type: Number,
+      default: null,
+      min: 0,
+    },
+    chargeableWeight: {
+      type: Number,
+      default: null,
       min: 0,
     },
   },
