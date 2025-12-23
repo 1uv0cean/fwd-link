@@ -15,18 +15,21 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { ERROR_CODES } from "@/lib/constants";
-import type { Currency, Incoterms, IQuoteLineItem, TransportMode } from "@/types/quotation";
-import { INCOTERMS_OPTIONS, PRESET_COST_ITEMS, TRANSPORT_MODE_OPTIONS } from "@/types/quotation";
+import type { Currency, Incoterms, IQuoteLineItem, Section, TransportMode } from "@/types/quotation";
+import { INCOTERMS_OPTIONS, PRESET_COST_ITEMS_BY_SECTION, SECTION_INFO, TRANSPORT_MODE_OPTIONS } from "@/types/quotation";
 import {
+    Anchor,
     Box,
     Calendar,
     ChevronDown,
     DollarSign,
     FileText,
     Loader2,
+    MapPin,
     Plus,
     Ship,
     Trash2,
+    Warehouse,
 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -44,6 +47,136 @@ interface QuoteFormProps {
   initialData?: QuoteFormInitialData;
 }
 
+// Helper to create empty line item for a section
+const createEmptyLineItem = (section: Section): IQuoteLineItem => ({
+  section,
+  name: "",
+  amount: 0,
+  currency: "USD",
+});
+
+// Section component for line items
+interface SectionPanelProps {
+  section: Section;
+  items: IQuoteLineItem[];
+  onAdd: () => void;
+  onRemove: (index: number) => void;
+  onUpdate: (index: number, field: keyof IQuoteLineItem, value: string | number) => void;
+  isKo: boolean;
+}
+
+function SectionPanel({ section, items, onAdd, onRemove, onUpdate, isKo }: SectionPanelProps) {
+  const info = SECTION_INFO[section];
+  const presets = PRESET_COST_ITEMS_BY_SECTION[section];
+  
+  const colorClasses = {
+    blue: {
+      border: "border-blue-200",
+      bg: "bg-blue-50/50",
+      header: "bg-blue-100 text-blue-800",
+      icon: "text-blue-600",
+      button: "border-blue-300 text-blue-600 hover:bg-blue-50",
+    },
+    emerald: {
+      border: "border-emerald-200",
+      bg: "bg-emerald-50/50",
+      header: "bg-emerald-100 text-emerald-800",
+      icon: "text-emerald-600",
+      button: "border-emerald-300 text-emerald-600 hover:bg-emerald-50",
+    },
+    orange: {
+      border: "border-orange-200",
+      bg: "bg-orange-50/50",
+      header: "bg-orange-100 text-orange-800",
+      icon: "text-orange-600",
+      button: "border-orange-300 text-orange-600 hover:bg-orange-50",
+    },
+  };
+  
+  const colors = colorClasses[info.color as keyof typeof colorClasses];
+  
+  const IconComponent = section === "ORIGIN" ? Warehouse : section === "FREIGHT" ? Anchor : MapPin;
+
+  return (
+    <div className={`rounded-lg border ${colors.border} ${colors.bg} overflow-hidden`}>
+      {/* Section Header */}
+      <div className={`px-4 py-2.5 ${colors.header} flex items-center gap-2`}>
+        <IconComponent className={`w-4 h-4 ${colors.icon}`} />
+        <span className="font-medium text-sm">
+          {isKo ? info.labelKo : info.label}
+        </span>
+      </div>
+      
+      {/* Items */}
+      <div className="p-4 space-y-2">
+        {items.map((item, index) => (
+          <div key={index} className="flex gap-2 items-center">
+            {/* Item Name */}
+            <div className="relative flex-1">
+              <input
+                type="text"
+                value={item.name}
+                onChange={(e) => onUpdate(index, "name", e.target.value)}
+                list={`preset-items-${section}-${index}`}
+                placeholder={isKo ? "항목명" : "Item name"}
+                className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+              />
+              <datalist id={`preset-items-${section}-${index}`}>
+                {presets.map((preset) => (
+                  <option key={preset} value={preset} />
+                ))}
+              </datalist>
+            </div>
+
+            {/* Amount */}
+            <Input
+              type="number"
+              value={item.amount || ""}
+              onChange={(e) => onUpdate(index, "amount", e.target.value)}
+              placeholder="0"
+              min="0"
+              step="0.01"
+              className="w-28 bg-white border-slate-300 text-slate-800 text-sm"
+            />
+
+            {/* Currency */}
+            <select
+              value={item.currency}
+              onChange={(e) => onUpdate(index, "currency", e.target.value)}
+              className="w-20 px-2 py-2 rounded-md border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            >
+              <option value="USD">USD</option>
+              <option value="KRW">KRW</option>
+              <option value="EUR">EUR</option>
+            </select>
+
+            {/* Remove Button */}
+            <button
+              type="button"
+              onClick={() => onRemove(index)}
+              className="p-2 text-slate-400 hover:text-red-500 transition-colors"
+            >
+              <Trash2 className="w-4 h-4" />
+            </button>
+          </div>
+        ))}
+        
+        {/* Add Item Button */}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={onAdd}
+          className={`w-full border-dashed ${colors.button}`}
+          size="sm"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          {isKo ? "항목 추가" : "Add Item"}
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -57,39 +190,67 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
   const [validUntil, setValidUntil] = useState("");
   const [remarks, setRemarks] = useState(initialData?.remarks || "");
 
-  // Dynamic line items
-  const [lineItems, setLineItems] = useState<IQuoteLineItem[]>([
-    { name: "OF", amount: 0, currency: "USD" },
+  // Sectioned line items
+  const [originItems, setOriginItems] = useState<IQuoteLineItem[]>([]);
+  const [freightItems, setFreightItems] = useState<IQuoteLineItem[]>([
+    { section: "FREIGHT", name: "Ocean Freight", amount: 0, currency: "USD" },
   ]);
+  const [destinationItems, setDestinationItems] = useState<IQuoteLineItem[]>([]);
 
   const isKo = locale === "ko";
 
-  const addLineItem = () => {
-    setLineItems([...lineItems, { name: "", amount: 0, currency: "USD" }]);
+  // Helper functions for each section
+  const addItem = (section: Section) => {
+    const item = createEmptyLineItem(section);
+    if (section === "ORIGIN") setOriginItems([...originItems, item]);
+    else if (section === "FREIGHT") setFreightItems([...freightItems, item]);
+    else setDestinationItems([...destinationItems, item]);
   };
 
-  const removeLineItem = (index: number) => {
-    if (lineItems.length > 1) {
-      setLineItems(lineItems.filter((_, i) => i !== index));
-    }
-  };
-
-  const updateLineItem = (index: number, field: keyof IQuoteLineItem, value: string | number) => {
-    const updated = [...lineItems];
-    if (field === "amount") {
-      updated[index][field] = Number(value);
+  const removeItem = (section: Section, index: number) => {
+    if (section === "ORIGIN") {
+      setOriginItems(originItems.filter((_, i) => i !== index));
+    } else if (section === "FREIGHT") {
+      if (freightItems.length > 1) {
+        setFreightItems(freightItems.filter((_, i) => i !== index));
+      }
     } else {
-      updated[index][field] = value as Currency & string;
+      setDestinationItems(destinationItems.filter((_, i) => i !== index));
     }
-    setLineItems(updated);
   };
+
+  const updateItem = (section: Section, index: number, field: keyof IQuoteLineItem, value: string | number) => {
+    const update = (items: IQuoteLineItem[]) => {
+      const updated = [...items];
+      if (field === "amount") {
+        updated[index][field] = Number(value);
+      } else if (field === "section") {
+        updated[index][field] = value as Section;
+      } else if (field === "currency") {
+        updated[index][field] = value as Currency;
+      } else {
+        updated[index][field] = value as string;
+      }
+      return updated;
+    };
+
+    if (section === "ORIGIN") setOriginItems(update(originItems));
+    else if (section === "FREIGHT") setFreightItems(update(freightItems));
+    else setDestinationItems(update(destinationItems));
+  };
+
+  // Combine all items
+  const allItems = [...originItems, ...freightItems, ...destinationItems];
 
   // Calculate totals by currency
-  const totalUSD = lineItems
+  const totalUSD = allItems
     .filter((item) => item.currency === "USD")
     .reduce((sum, item) => sum + item.amount, 0);
-  const totalKRW = lineItems
+  const totalKRW = allItems
     .filter((item) => item.currency === "KRW")
+    .reduce((sum, item) => sum + item.amount, 0);
+  const totalEUR = allItems
+    .filter((item) => item.currency === "EUR")
     .reduce((sum, item) => sum + item.amount, 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -104,7 +265,7 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
     }
 
     // Validate line items
-    const validLineItems = lineItems.filter((item) => item.name && item.amount > 0);
+    const validLineItems = allItems.filter((item) => item.name && item.amount > 0);
     if (validLineItems.length === 0) {
       setError(isKo ? "최소 하나의 비용 항목을 입력해주세요" : "Please add at least one cost item");
       setIsLoading(false);
@@ -248,82 +409,47 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
           locale={locale}
         />
 
-        {/* Dynamic Cost Items Section */}
-        <div className="space-y-3">
+        {/* Cost Sections */}
+        <div className="space-y-4">
           <label className="text-sm font-medium text-slate-700 flex items-center gap-2">
             <DollarSign className="w-4 h-4" />
             {isKo ? "비용 항목" : "Cost Items"}
           </label>
           
-          <div className="space-y-2">
-            {lineItems.map((item, index) => (
-              <div key={index} className="flex gap-2 items-center">
-                {/* Item Name - Combobox with presets */}
-                <div className="relative flex-1">
-                  <input
-                    type="text"
-                    value={item.name}
-                    onChange={(e) => updateLineItem(index, "name", e.target.value)}
-                    list={`preset-items-${index}`}
-                    placeholder={isKo ? "항목명" : "Item name"}
-                    className="w-full px-3 py-2 rounded-md border border-slate-300 bg-white text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
-                  />
-                  <datalist id={`preset-items-${index}`}>
-                    {PRESET_COST_ITEMS.map((preset) => (
-                      <option key={preset} value={preset} />
-                    ))}
-                  </datalist>
-                </div>
-
-                {/* Amount */}
-                <Input
-                  type="number"
-                  value={item.amount || ""}
-                  onChange={(e) => updateLineItem(index, "amount", e.target.value)}
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                  className="w-28 bg-white border-slate-300 text-slate-800 text-sm"
-                />
-
-                {/* Currency */}
-                <select
-                  value={item.currency}
-                  onChange={(e) => updateLineItem(index, "currency", e.target.value)}
-                  className="w-20 px-2 py-2 rounded-md border border-slate-300 bg-white text-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                >
-                  <option value="USD">USD</option>
-                  <option value="KRW">KRW</option>
-                </select>
-
-                {/* Remove Button */}
-                <button
-                  type="button"
-                  onClick={() => removeLineItem(index)}
-                  disabled={lineItems.length === 1}
-                  className="p-2 text-slate-400 hover:text-red-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-
-          {/* Add Item Button */}
-          <Button
-            type="button"
-            variant="outline"
-            onClick={addLineItem}
-            className="w-full border-dashed border-slate-300 text-slate-600 hover:bg-slate-50"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {isKo ? "항목 추가" : "Add Item"}
-          </Button>
+          {/* Origin Section */}
+          <SectionPanel
+            section="ORIGIN"
+            items={originItems}
+            onAdd={() => addItem("ORIGIN")}
+            onRemove={(index) => removeItem("ORIGIN", index)}
+            onUpdate={(index, field, value) => updateItem("ORIGIN", index, field, value)}
+            isKo={isKo}
+          />
+          
+          {/* Freight Section */}
+          <SectionPanel
+            section="FREIGHT"
+            items={freightItems}
+            onAdd={() => addItem("FREIGHT")}
+            onRemove={(index) => removeItem("FREIGHT", index)}
+            onUpdate={(index, field, value) => updateItem("FREIGHT", index, field, value)}
+            isKo={isKo}
+          />
+          
+          {/* Destination Section */}
+          <SectionPanel
+            section="DESTINATION"
+            items={destinationItems}
+            onAdd={() => addItem("DESTINATION")}
+            onRemove={(index) => removeItem("DESTINATION", index)}
+            onUpdate={(index, field, value) => updateItem("DESTINATION", index, field, value)}
+            isKo={isKo}
+          />
 
           {/* Totals Summary */}
-          <div className="mt-4 p-4 rounded-lg bg-slate-100 border border-slate-200">
+          <div className="p-4 rounded-lg bg-slate-100 border border-slate-200">
             <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-2">
-              {isKo ? "합계" : "Total"}
+              {isKo ? "합계" : "Estimated Total"}
             </div>
             <div className="flex flex-wrap gap-4">
               {totalUSD > 0 && (
@@ -338,7 +464,13 @@ export default function QuoteForm({ locale, initialData }: QuoteFormProps) {
                   <span className="text-sm font-normal text-slate-500 ml-1">KRW</span>
                 </div>
               )}
-              {totalUSD === 0 && totalKRW === 0 && (
+              {totalEUR > 0 && (
+                <div className="text-lg font-bold text-blue-900">
+                  €{totalEUR.toLocaleString("de-DE", { minimumFractionDigits: 2 })}
+                  <span className="text-sm font-normal text-slate-500 ml-1">EUR</span>
+                </div>
+              )}
+              {totalUSD === 0 && totalKRW === 0 && totalEUR === 0 && (
                 <div className="text-slate-400 text-sm">
                   {isKo ? "금액을 입력해주세요" : "Enter amounts"}
                 </div>

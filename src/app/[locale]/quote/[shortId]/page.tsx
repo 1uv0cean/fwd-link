@@ -3,8 +3,9 @@ import BookingRequestModal from "@/components/booking-request-modal";
 import ShareButtons from "@/components/share-buttons";
 import { APP_URL } from "@/lib/constants";
 import { formatCurrency, formatDate, getFlagFromPort } from "@/lib/utils";
-import type { Currency, IQuoteLineItem } from "@/types/quotation";
-import { AlertCircle, Anchor, Box, Calendar, FileText, Package, Ship } from "lucide-react";
+import type { Currency, IQuoteLineItem, Section } from "@/types/quotation";
+import { SECTION_INFO } from "@/types/quotation";
+import { AlertCircle, Anchor, Box, Calendar, FileText, MapPin, Package, Ship, Warehouse } from "lucide-react";
 import type { Metadata } from "next";
 import { setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -49,6 +50,32 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+// Helper to normalize line item (add section if missing for backward compatibility)
+function normalizeLineItem(item: IQuoteLineItem | { name: string; amount: number; currency: Currency }): IQuoteLineItem {
+  return {
+    section: ('section' in item && item.section) ? item.section : 'FREIGHT',
+    name: item.name,
+    amount: item.amount,
+    currency: item.currency,
+  };
+}
+
+// Helper to group line items by section
+function groupBySection(lineItems: IQuoteLineItem[]): Record<Section, IQuoteLineItem[]> {
+  const result: Record<Section, IQuoteLineItem[]> = {
+    ORIGIN: [],
+    FREIGHT: [],
+    DESTINATION: [],
+  };
+  
+  for (const item of lineItems) {
+    const normalizedItem = normalizeLineItem(item);
+    result[normalizedItem.section].push(normalizedItem);
+  }
+  
+  return result;
+}
+
 // Helper to calculate totals by currency
 function calculateTotals(lineItems: IQuoteLineItem[]) {
   const totalUSD = lineItems
@@ -57,13 +84,19 @@ function calculateTotals(lineItems: IQuoteLineItem[]) {
   const totalKRW = lineItems
     .filter((item) => item.currency === "KRW")
     .reduce((sum, item) => sum + item.amount, 0);
-  return { totalUSD, totalKRW };
+  const totalEUR = lineItems
+    .filter((item) => item.currency === "EUR")
+    .reduce((sum, item) => sum + item.amount, 0);
+  return { totalUSD, totalKRW, totalEUR };
 }
 
 // Helper to format amount by currency
 function formatAmount(amount: number, currency: Currency) {
   if (currency === "KRW") {
     return `₩${amount.toLocaleString("ko-KR")}`;
+  }
+  if (currency === "EUR") {
+    return `€${amount.toLocaleString("de-DE", { minimumFractionDigits: 2 })}`;
   }
   return `$${amount.toLocaleString("en-US", { minimumFractionDigits: 2 })}`;
 }
@@ -76,6 +109,91 @@ function adjustColor(hex: string, percent: number): string {
   const G = Math.min(255, ((num >> 8) & 0x00ff) + amt);
   const B = Math.min(255, (num & 0x0000ff) + amt);
   return `#${((1 << 24) | (R << 16) | (G << 8) | B).toString(16).slice(1)}`;
+}
+
+// Section table component
+interface SectionTableProps {
+  section: Section;
+  items: IQuoteLineItem[];
+  isKo: boolean;
+}
+
+function SectionTable({ section, items, isKo }: SectionTableProps) {
+  if (items.length === 0) return null;
+  
+  const info = SECTION_INFO[section];
+  
+  const colorClasses = {
+    blue: {
+      border: "border-blue-200",
+      header: "bg-blue-50 text-blue-800",
+      icon: "text-blue-600",
+    },
+    emerald: {
+      border: "border-emerald-200",
+      header: "bg-emerald-50 text-emerald-800",
+      icon: "text-emerald-600",
+    },
+    orange: {
+      border: "border-orange-200",
+      header: "bg-orange-50 text-orange-800",
+      icon: "text-orange-600",
+    },
+  };
+  
+  const colors = colorClasses[info.color as keyof typeof colorClasses];
+  const IconComponent = section === "ORIGIN" ? Warehouse : section === "FREIGHT" ? Anchor : MapPin;
+
+  // Calculate section subtotal
+  const { totalUSD, totalKRW, totalEUR } = calculateTotals(items);
+  const hasMultipleTotals = [totalUSD > 0, totalKRW > 0, totalEUR > 0].filter(Boolean).length > 1;
+
+  return (
+    <div className={`rounded-lg border ${colors.border} overflow-hidden`}>
+      <div className={`px-4 py-2 ${colors.header} flex items-center gap-2`}>
+        <IconComponent className={`w-4 h-4 ${colors.icon}`} />
+        <span className="font-medium text-sm">
+          {isKo ? info.labelKo : info.label}
+        </span>
+      </div>
+      <table className="w-full">
+        <thead className="bg-slate-50">
+          <tr>
+            <th className="text-left text-xs font-medium text-slate-600 px-4 py-2">
+              {isKo ? "항목" : "Item"}
+            </th>
+            <th className="text-right text-xs font-medium text-slate-600 px-4 py-2">
+              {isKo ? "금액" : "Amount"}
+            </th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-slate-100">
+          {items.map((item, index) => (
+            <tr key={index} className="hover:bg-slate-50">
+              <td className="px-4 py-3 text-sm text-slate-700">{item.name}</td>
+              <td className="px-4 py-3 text-sm text-slate-900 text-right font-medium">
+                {formatAmount(item.amount, item.currency)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+        {hasMultipleTotals && (
+          <tfoot className="bg-slate-50 border-t border-slate-200">
+            <tr>
+              <td className="px-4 py-2 text-xs font-medium text-slate-500">
+                {isKo ? "소계" : "Subtotal"}
+              </td>
+              <td className="px-4 py-2 text-sm text-right font-semibold text-slate-700">
+                {totalUSD > 0 && <span className="mr-2">${totalUSD.toLocaleString("en-US", { minimumFractionDigits: 2 })}</span>}
+                {totalKRW > 0 && <span className="mr-2">₩{totalKRW.toLocaleString("ko-KR")}</span>}
+                {totalEUR > 0 && <span>€{totalEUR.toLocaleString("de-DE", { minimumFractionDigits: 2 })}</span>}
+              </td>
+            </tr>
+          </tfoot>
+        )}
+      </table>
+    </div>
+  );
 }
 
 export default async function QuoteViewPage({ params }: PageProps) {
@@ -96,13 +214,16 @@ export default async function QuoteViewPage({ params }: PageProps) {
   const containerType = quotation.containerType || '40HQ';
   const incoterms = quotation.incoterms || 'FOB';
   const transportMode = quotation.transportMode || 'FCL';
-  const lineItems = quotation.lineItems || [];
+  const lineItems = (quotation.lineItems || []).map(normalizeLineItem);
   
   const polFlag = getFlagFromPort(quotation.pol);
   const podFlag = getFlagFromPort(quotation.pod);
 
-  // Calculate totals from line items
-  const { totalUSD, totalKRW } = calculateTotals(lineItems);
+  // Group line items by section
+  const groupedItems = groupBySection(lineItems);
+
+  // Calculate totals from all line items
+  const { totalUSD, totalKRW, totalEUR } = calculateTotals(lineItems);
 
   // Check if quote is expired
   const validUntilDate = new Date(quotation.validUntil);
@@ -144,7 +265,7 @@ export default async function QuoteViewPage({ params }: PageProps) {
                 <span className="text-white font-semibold tracking-tight">{displayName}</span>
               </div>
               <span className="text-white/80 text-sm font-medium">
-                {isKo ? "해상운임 견적서" : "Ocean Freight Quotation"}
+                {isKo ? "운임 견적서" : "Freight Quotation"}
               </span>
             </div>
           </div>
@@ -237,36 +358,21 @@ export default async function QuoteViewPage({ params }: PageProps) {
             {/* Divider */}
             <div className="border-t border-dashed border-slate-200 my-6" />
 
-            {/* Cost Breakdown Table */}
+            {/* Cost Breakdown - 3 Sections */}
             {lineItems.length > 0 && (
-              <div className="mb-6">
+              <div className="mb-6 space-y-3">
                 <div className="text-xs font-medium text-slate-500 uppercase tracking-wider mb-3">
                   {isKo ? "비용 내역" : "Cost Breakdown"}
                 </div>
-                <div className="rounded-lg border border-slate-200 overflow-hidden">
-                  <table className="w-full">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="text-left text-xs font-medium text-slate-600 px-4 py-2">
-                          {isKo ? "항목" : "Item"}
-                        </th>
-                        <th className="text-right text-xs font-medium text-slate-600 px-4 py-2">
-                          {isKo ? "금액" : "Amount"}
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {lineItems.map((item: IQuoteLineItem, index: number) => (
-                        <tr key={index} className="hover:bg-slate-50">
-                          <td className="px-4 py-3 text-sm text-slate-700">{item.name}</td>
-                          <td className="px-4 py-3 text-sm text-slate-900 text-right font-medium">
-                            {formatAmount(item.amount, item.currency)}
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                
+                {/* Origin Section */}
+                <SectionTable section="ORIGIN" items={groupedItems.ORIGIN} isKo={isKo} />
+                
+                {/* Freight Section */}
+                <SectionTable section="FREIGHT" items={groupedItems.FREIGHT} isKo={isKo} />
+                
+                {/* Destination Section */}
+                <SectionTable section="DESTINATION" items={groupedItems.DESTINATION} isKo={isKo} />
               </div>
             )}
 
@@ -288,7 +394,13 @@ export default async function QuoteViewPage({ params }: PageProps) {
                     <span className="text-sm font-normal text-slate-500 ml-1">KRW</span>
                   </div>
                 )}
-                {totalUSD === 0 && totalKRW === 0 && (
+                {totalEUR > 0 && (
+                  <div className="text-3xl font-bold text-blue-900">
+                    €{totalEUR.toLocaleString("de-DE", { minimumFractionDigits: 2 })}
+                    <span className="text-sm font-normal text-slate-500 ml-1">EUR</span>
+                  </div>
+                )}
+                {totalUSD === 0 && totalKRW === 0 && totalEUR === 0 && (
                   <div className="text-3xl font-bold text-blue-900">
                     {formatCurrency(quotation.price)}
                   </div>
